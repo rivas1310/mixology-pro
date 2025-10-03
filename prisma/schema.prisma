@@ -1,0 +1,212 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  favorites CocktailFavorite[]
+  reviews   CocktailReview[]
+
+  @@map("users")
+}
+
+model Cocktail {
+  id               String   @id @default(cuid())
+  name             String
+  description      String?
+  image            String?
+  imageKey         String?  // Clave de la imagen en R2
+  category         String
+  difficulty       String
+  time             String
+  abv              Float?
+  isClassic        Boolean  @default(false)
+  isFeatured       Boolean  @default(false)
+  rating           Float    @default(0)
+  reviewCount      Int      @default(0)
+  
+  // Ingredientes como array de strings (texto libre)
+  ingredientsText  Json?    // ["Tequila 60ml", "Lima 30ml", "Cointreau 30ml"]
+  
+  // Historia y datos adicionales
+  story            String?
+  trivia           String?
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relaciones
+  ingredients      CocktailIngredient[]
+  instructions     CocktailInstruction[]
+  favorites        CocktailFavorite[]
+  reviews          CocktailReview[]
+
+  @@map("cocktails")
+}
+
+model Ingredient {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  category    String
+  description String?
+  image       String?
+  imageKey    String?  // Clave de la imagen en R2
+  season      String?
+  origin      String?
+  nutrition   Json?
+  storage     String?
+  shelfLife   String?
+  isEssential Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  cocktails CocktailIngredient[]
+
+  @@map("ingredients")
+}
+
+model Spirit {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  category    String
+  brand       String?
+  description String?
+  image       String?
+  imageKey    String?  // Clave de la imagen en R2
+  abv         Float?
+  origin      String?
+  price       Float?
+  rating      Float    @default(0)
+  isPremium   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("spirits")
+}
+
+model Beer {
+  id          String   @id @default(cuid())
+  name        String
+  brand       String
+  type        String
+  category    String
+  description String?
+  image       String?
+  imageKey    String?  // Clave de la imagen en R2
+  abv         Float?
+  ibu         Int?
+  origin      String?
+  price       Float?
+  rating      Float    @default(0)
+  isCraft     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("beers")
+}
+
+model Wine {
+  id          String   @id @default(cuid())
+  name        String
+  brand       String
+  type        String
+  category    String
+  description String?
+  image       String?
+  imageKey    String?  // Clave de la imagen en R2
+  abv         Float?
+  vintage     Int?
+  origin      String?
+  price       Float?
+  rating      Float    @default(0)
+  isPremium   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("wines")
+}
+
+model CocktailIngredient {
+  id          String @id @default(cuid())
+  cocktailId   String
+  ingredientId String
+  amount      String
+  unit        String?
+  order       Int?
+
+  // Relaciones
+  cocktail   Cocktail   @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([cocktailId, ingredientId])
+  @@map("cocktail_ingredients")
+}
+
+model CocktailInstruction {
+  id        String @id @default(cuid())
+  cocktailId String
+  step      Int
+  instruction String
+  order     Int?
+
+  // Relaciones
+  cocktail Cocktail @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+
+  @@map("cocktail_instructions")
+}
+
+model CocktailFavorite {
+  id        String @id @default(cuid())
+  userId    String
+  cocktailId String
+  createdAt DateTime @default(now())
+
+  // Relaciones
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cocktail Cocktail @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cocktailId])
+  @@map("cocktail_favorites")
+}
+
+model CocktailReview {
+  id        String @id @default(cuid())
+  userId    String
+  cocktailId String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cocktail Cocktail @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cocktailId])
+  @@map("cocktail_reviews")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}

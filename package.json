@@ -1,0 +1,63 @@
+{
+  "name": "mixology-pro",
+  "version": "1.0.0",
+  "description": "El Santo Grial del Bartender - Plataforma completa para mixólogos profesionales",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:setup": "npm run db:generate && npm run db:push && npm run db:seed",
+    "db:studio": "prisma studio",
+    "test:r2": "node scripts/test-r2-connection.js",
+    "configure:cors": "node scripts/configure-cors.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.901.0",
+    "@aws-sdk/s3-request-presigner": "^3.901.0",
+    "@hookform/resolvers": "^3.3.2",
+    "@prisma/client": "^6.16.3",
+    "@types/multer": "^2.0.0",
+    "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
+    "framer-motion": "^12.23.22",
+    "lucide-react": "^0.544.0",
+    "multer": "^2.0.2",
+    "next": "15.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18",
+    "react-hook-form": "^7.48.2",
+    "react-hot-toast": "^2.4.1",
+    "react-intersection-observer": "^9.5.3",
+    "swiper": "^11.0.5",
+    "tailwind-merge": "^2.6.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "@types/node": "20.19.19",
+    "@types/react": "18.3.25",
+    "@types/react-dom": "^18.3.7",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "15.4.1",
+    "postcss": "^8.5.6",
+    "prisma": "^6.16.3",
+    "tailwindcss": "^3.4.18",
+    "tsx": "^4.7.0",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
