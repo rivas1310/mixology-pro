@@ -146,8 +146,9 @@ async function fetchCocktails(category: string, difficulty?: string, search?: st
       params.append('difficulty', difficulty)
     }
     
-    const url = `/api/cocktails?${params.toString()}`
-    const response = await fetch(url)
+    const baseUrl = typeof window !== 'undefined' ? '' : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const url = `${baseUrl}/api/cocktails?${params.toString()}`
+    const response = await fetch(url, { cache: 'no-store' })
     
     if (!response.ok) {
       throw new Error('Error al cargar cócteles')
