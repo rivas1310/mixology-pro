@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { validateFile } from '@/lib/fileValidation'
 
 interface UploadOptions {
-  folder: 'cocktails' | 'ingredients' | 'spirits' | 'beers' | 'wines' | 'users'
+  folder: 'cocktails' | 'ingredients' | 'spirits' | 'beers' | 'wines' | 'techniques' | 'tools' | 'users'
   userId?: string
   onSuccess?: (url: string, key: string) => void
   onError?: (error: string) => void

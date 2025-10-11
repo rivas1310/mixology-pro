@@ -32,9 +32,13 @@ export function CloudflareImage({
       <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${className}`}>
         <div className="text-center p-4">
           <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
             Error cargando imagen
           </p>
+          <details className="text-xs text-gray-500 dark:text-gray-400">
+            <summary className="cursor-pointer">Ver detalles</summary>
+            <p className="mt-2 break-all">URL: {src}</p>
+          </details>
         </div>
       </div>
     )
@@ -58,7 +62,9 @@ export function CloudflareImage({
           isLoading ? 'opacity-0' : 'opacity-100'
         } ${fill ? 'w-full h-full object-cover' : ''}`}
         onLoad={() => setIsLoading(false)}
-        onError={() => {
+        onError={(e) => {
+          console.error('Error cargando imagen:', src)
+          console.error('Error event:', e)
           setIsLoading(false)
           setHasError(true)
         }}

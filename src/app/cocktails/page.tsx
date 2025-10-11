@@ -50,50 +50,22 @@ import {
   Zap as ZapIcon,
   Star as StarIcon
 } from 'lucide-react'
+import { COCKTAIL_CATEGORIES } from '@/lib/constants'
 
-const cocktailCategories = [
-  {
-    id: 'soft',
-    name: 'Soft Drinks',
-    icon: DropletsIcon,
-    color: 'from-green-500 to-emerald-600',
-    bgColor: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20',
-    description: 'Cócteles sin alcohol, refrescantes y saludables',
-    count: 25,
-    difficulty: 'Fácil',
-    time: '3-5 min',
-    subcategories: ['Mocktails', 'Smoothies', 'Jugos', 'Tés'],
-    examples: ['Virgin Mojito', 'Shirley Temple', 'Piña Colada Sin Alcohol', 'Limonada de Fresa']
-  },
-  {
-    id: 'hard',
-    name: 'Hard Drinks',
+// Configuración de categorías con iconos y estilos
+const categoryConfig = {
+  CLASSIC: {
     icon: WineIcon,
     color: 'from-red-500 to-pink-600',
     bgColor: 'from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20',
-    description: 'Cócteles con alcohol, clásicos y modernos',
+    description: 'Cócteles clásicos y tradicionales',
     count: 50,
     difficulty: 'Intermedio',
     time: '5-10 min',
     subcategories: ['Clásicos', 'Modernos', 'Tropicales', 'De Temporada'],
     examples: ['Old Fashioned', 'Whiskey Sour', 'Mai Tai', 'Cosmopolitan']
   },
-  {
-    id: 'martinis',
-    name: 'Martinis',
-    icon: StarIcon,
-    color: 'from-blue-500 to-cyan-600',
-    bgColor: 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
-    description: 'Cócteles elegantes y sofisticados',
-    count: 30,
-    difficulty: 'Intermedio',
-    time: '4-8 min',
-    subcategories: ['Dry Martini', 'Wet Martini', 'Dirty Martini', 'Vodka Martini'],
-    examples: ['Dry Martini', 'Dirty Martini', 'Vesper', 'Gibson']
-  },
-  {
-    id: 'tropical',
-    name: 'Tropicales',
+  TROPICAL: {
     icon: Flame,
     color: 'from-yellow-500 to-orange-600',
     bgColor: 'from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20',
@@ -104,12 +76,21 @@ const cocktailCategories = [
     subcategories: ['Tiki', 'Caribeños', 'Hawaianos', 'Tropicales'],
     examples: ['Piña Colada', 'Mai Tai', 'Blue Hawaiian', 'Zombie']
   },
-  {
-    id: 'sours',
-    name: 'Sours',
+  DESSERT: {
+    icon: Heart,
+    color: 'from-pink-500 to-rose-600',
+    bgColor: 'from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20',
+    description: 'Cócteles dulces y cremosos',
+    count: 15,
+    difficulty: 'Intermedio',
+    time: '5-10 min',
+    subcategories: ['Creamy', 'Chocolate', 'Fruit', 'Coffee'],
+    examples: ['White Russian', 'Grasshopper', 'Chocolate Martini', 'Irish Coffee']
+  },
+  SOUR: {
     icon: ZapIcon,
     color: 'from-purple-500 to-indigo-600',
-    bgColor: 'from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-purple-900/20',
+    bgColor: 'from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20',
     description: 'Cócteles ácidos y equilibrados',
     count: 20,
     difficulty: 'Intermedio',
@@ -117,22 +98,7 @@ const cocktailCategories = [
     subcategories: ['Whiskey Sour', 'Gin Sour', 'Pisco Sour', 'Amaretto Sour'],
     examples: ['Whiskey Sour', 'Pisco Sour', 'Amaretto Sour', 'Lemon Drop']
   },
-  {
-    id: 'highballs',
-    name: 'Highballs',
-    icon: BarChart3,
-    color: 'from-amber-500 to-orange-600',
-    bgColor: 'from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20',
-    description: 'Cócteles largos y refrescantes',
-    count: 25,
-    difficulty: 'Fácil',
-    time: '2-4 min',
-    subcategories: ['Gin Tonic', 'Cuba Libre', 'Moscow Mule', 'Dark & Stormy'],
-    examples: ['Gin Tonic', 'Cuba Libre', 'Moscow Mule', 'Dark & Stormy']
-  },
-  {
-    id: 'shots',
-    name: 'Shots',
+  SHOT: {
     icon: Target,
     color: 'from-red-500 to-pink-600',
     bgColor: 'from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20',
@@ -143,21 +109,47 @@ const cocktailCategories = [
     subcategories: ['Tequila Shots', 'Vodka Shots', 'Whiskey Shots', 'Layered Shots'],
     examples: ['Tequila Shot', 'Kamikaze', 'B-52', 'Jägerbomb']
   },
-  {
-    id: 'dessert',
-    name: 'Dessert Cocktails',
-    icon: Heart,
-    color: 'from-pink-500 to-rose-600',
-    bgColor: 'from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-pink-900/20',
-    description: 'Cócteles dulces y cremosos',
-    count: 15,
+  MOCKTAIL: {
+    icon: DropletsIcon,
+    color: 'from-green-500 to-emerald-600',
+    bgColor: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20',
+    description: 'Cócteles sin alcohol, refrescantes y saludables',
+    count: 25,
+    difficulty: 'Fácil',
+    time: '3-5 min',
+    subcategories: ['Mocktails', 'Smoothies', 'Jugos', 'Tés'],
+    examples: ['Virgin Mojito', 'Shirley Temple', 'Piña Colada Sin Alcohol', 'Limonada de Fresa']
+  },
+  HIGHBALL: {
+    icon: BarChart3,
+    color: 'from-amber-500 to-orange-600',
+    bgColor: 'from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20',
+    description: 'Cócteles largos y refrescantes',
+    count: 25,
+    difficulty: 'Fácil',
+    time: '2-4 min',
+    subcategories: ['Gin Tonic', 'Cuba Libre', 'Moscow Mule', 'Dark & Stormy'],
+    examples: ['Gin Tonic', 'Cuba Libre', 'Moscow Mule', 'Dark & Stormy']
+  },
+  MARTINI: {
+    icon: StarIcon,
+    color: 'from-blue-500 to-cyan-600',
+    bgColor: 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
+    description: 'Cócteles elegantes y sofisticados',
+    count: 30,
     difficulty: 'Intermedio',
-    time: '5-10 min',
-    subcategories: ['Creamy', 'Chocolate', 'Fruit', 'Coffee'],
-    examples: ['White Russian', 'Grasshopper', 'Chocolate Martini', 'Irish Coffee']
+    time: '4-8 min',
+    subcategories: ['Dry Martini', 'Wet Martini', 'Dirty Martini', 'Vodka Martini'],
+    examples: ['Dry Martini', 'Dirty Martini', 'Vesper', 'Gibson']
   }
-]
+}
 
+// Generar categorías desde las constantes unificadas
+const cocktailCategories = COCKTAIL_CATEGORIES.map(category => ({
+  id: category.value,
+  name: category.label,
+  ...categoryConfig[category.value as keyof typeof categoryConfig]
+}))
 const featuredCocktails = [
   {
     id: 'old-fashioned',

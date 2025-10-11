@@ -16,7 +16,7 @@ import { useImageUpload } from '@/hooks/useImageUpload'
 import { CloudflareImage } from './CloudflareImage'
 
 interface ImageUploadProps {
-  folder: 'cocktails' | 'ingredients' | 'spirits' | 'beers' | 'wines' | 'users'
+  folder: 'cocktails' | 'ingredients' | 'spirits' | 'beers' | 'wines' | 'techniques' | 'tools' | 'users'
   userId?: string
   onImageUpload: (url: string, key: string) => void
   onImageRemove?: (key: string) => void
@@ -204,31 +204,34 @@ export function ImageUpload({
 
       {/* Imagen actual */}
       {currentImage && (
-        <div className="relative">
-                    <div className="relative w-full h-48 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                      <CloudflareImage
-                        src={currentImage}
-                        alt="Imagen actual"
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+        <div className="space-y-4">
+          <div className="relative w-full max-w-md mx-auto rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+            <CloudflareImage
+              src={currentImage}
+              alt="Imagen actual"
+              width={400}
+              height={300}
+              className="w-full h-auto object-contain"
+            />
+          </div>
           
-          <div className="absolute top-2 right-2 flex gap-2">
+          <div className="flex justify-center gap-2">
             <button
               type="button"
               onClick={() => window.open(currentImage, '_blank')}
-              className="p-2 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             >
-              <Eye className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <Eye className="h-4 w-4" />
+              Ver imagen completa
             </button>
             
             <button
               type="button"
               onClick={handleRemoveImage}
-              className="p-2 bg-red-500/80 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
             >
               <Trash2 className="h-4 w-4" />
+              Eliminar
             </button>
           </div>
         </div>

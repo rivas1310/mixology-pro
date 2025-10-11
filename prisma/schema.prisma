@@ -61,21 +61,38 @@ model Cocktail {
 }
 
 model Ingredient {
-  id          String   @id @default(cuid())
-  name        String
-  type        String
-  category    String
-  description String?
-  image       String?
-  imageKey    String?  // Clave de la imagen en R2
-  season      String?
-  origin      String?
-  nutrition   Json?
-  storage     String?
-  shelfLife   String?
-  isEssential Boolean @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  type          String
+  category      String
+  description   String?
+  image         String?
+  imageKey      String?  // Clave de la imagen en R2
+  season        String?
+  origin        String?
+  nutrition     Json?
+  storage       String?
+  shelfLife     String?
+  isEssential   Boolean @default(false)
+  // Campos adicionales
+  abv           String?  // Para alcoholes
+  flavor        String?  @db.Text  // Perfil de sabor
+  intensity     String?  // Suave, Medio, Fuerte
+  color         String?
+  aroma         String?  @db.Text
+  texture       String?  // Para lácteos, frutas
+  uses          String?  @db.Text  // Usos en coctelería
+  substitutes   String?  @db.Text  // Sustitutos
+  preparation   String?  @db.Text  // Cómo usar
+  pairings      String?  @db.Text  // Qué combina bien
+  benefits      String?  @db.Text  // Beneficios/propiedades
+  precautions   String?  @db.Text  // Precauciones/alergias
+  brand         String?  // Marca
+  price         String?  // Precio
+  volume        String?  // Volumen/presentación
+  concentration String?  // Para jarabes, bitters
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relaciones
   cocktails CocktailIngredient[]
@@ -89,14 +106,33 @@ model Spirit {
   type        String
   category    String
   brand       String?
-  description String?
+  producer    String?
+  owner       String?
+  description String?  @db.Text
   image       String?
   imageKey    String?  // Clave de la imagen en R2
   abv         Float?
   origin      String?
+  denomination String?
   price       Float?
   rating      Float    @default(0)
   isPremium   Boolean  @default(false)
+  // Composición
+  composition String?  @db.Text
+  aging       String?
+  // Características organolépticas
+  color       String?
+  aroma       String?  @db.Text
+  taste       String?  @db.Text
+  finish      String?  @db.Text
+  // Consumo
+  servingSuggestions String? @db.Text
+  temperature String?
+  // Maridaje y notas
+  pairings    String?  @db.Text
+  trivia      String?  @db.Text
+  // Presentaciones
+  presentations String? @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -104,45 +140,128 @@ model Spirit {
 }
 
 model Beer {
-  id          String   @id @default(cuid())
-  name        String
-  brand       String
-  type        String
-  category    String
-  description String?
-  image       String?
-  imageKey    String?  // Clave de la imagen en R2
-  abv         Float?
-  ibu         Int?
-  origin      String?
-  price       Float?
-  rating      Float    @default(0)
-  isCraft     Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  brand        String
+  type         String
+  category     String
+  description  String?
+  image        String?
+  imageKey     String?  // Clave de la imagen en R2
+  abv          Float?
+  ibu          Int?
+  origin       String?
+  state        String?  // Estado o región del país
+  servingTemp  String?  // Temperatura recomendada
+  price        Float?
+  rating       Float    @default(0)
+  isCraft      Boolean  @default(false)
+  isPremium    Boolean  @default(false)
+  // Notas de cata
+  tastingNotes String?  @db.Text
+  color        String?
+  aroma        String?  @db.Text
+  flavor       String?  @db.Text
+  pairing      String?  @db.Text  // Maridaje recomendado
+  glassType    String?  // Tipo de vaso
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("beers")
 }
 
 model Wine {
-  id          String   @id @default(cuid())
-  name        String
-  brand       String
-  type        String
-  category    String
-  description String?
-  image       String?
-  imageKey    String?  // Clave de la imagen en R2
-  abv         Float?
-  vintage     Int?
-  origin      String?
-  price       Float?
-  rating      Float    @default(0)
-  isPremium   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  brand         String
+  type          String
+  category      String
+  description   String?
+  image         String?
+  imageKey      String?  // Clave de la imagen en R2
+  abv           Float?
+  vintage       Int?
+  origin        String?
+  region        String?
+  denomination  String?  // D.O., D.O.C., A.O.C., etc.
+  grapeVariety  String?  // Variedad de uva
+  winery        String?  // Bodega / Viñedo
+  servingTemp   String?  // Temperatura de servicio
+  price         Float?
+  rating        Float    @default(0)
+  isPremium     Boolean  @default(false)
+  // Notas de cata
+  tastingNotes  String?  @db.Text
+  color         String?
+  aroma         String?  @db.Text
+  taste         String?  @db.Text
+  body          String?  // Ligero, Medio, Completo
+  acidity       String?  // Baja, Media, Alta
+  tannins       String?  // Suaves, Medios, Firmes
+  finish        String?  @db.Text  // Final/Persistencia
+  pairing       String?  @db.Text  // Maridaje
+  awards        String?  @db.Text  // Premios y reconocimientos
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("wines")
+}
+
+model Technique {
+  id            String   @id @default(cuid())
+  name          String
+  category      String   // SHAKING, STIRRING, MUDDLING, INFUSIONS, CLARIFICATION, etc.
+  subcategory   String?  // Para infusiones: SHRUBS, CORDIALES, MACERACIONES, FAT_WASH, etc.
+  description   String?  @db.Text
+  image         String?
+  imageKey      String?
+  difficulty    String?  // EASY, MEDIUM, HARD
+  timeRequired  String?  // Tiempo requerido
+  // Instrucciones paso a paso
+  steps         Json?    // Array de pasos [{step: 1, instruction: "...", tip: "..."}]
+  // Ingredientes/materiales necesarios
+  ingredients   String?  @db.Text
+  equipment     String?  @db.Text  // Equipo necesario
+  tips          String?  @db.Text  // Consejos y trucos
+  videoUrl      String?  // URL de video tutorial
+  applications  String?  @db.Text  // Aplicaciones / Usos
+  examples      String?  @db.Text  // Ejemplos de cócteles
+  precautions   String?  @db.Text  // Precauciones
+  benefits      String?  @db.Text  // Beneficios de usar esta técnica
+  origin        String?  // Origen de la técnica
+  isFeatured    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("techniques")
+}
+
+model Tool {
+  id            String   @id @default(cuid())
+  name          String
+  category      String   // BARTENDER, MIXOLOGIST, SOMMELIER
+  subcategory   String?  // ESSENTIAL, ADVANCED, PROFESSIONAL, SPECIALIZED
+  description   String?  @db.Text
+  image         String?
+  imageKey      String?
+  brand         String?  // Marca
+  material      String?  // Material (acero inoxidable, vidrio, etc)
+  size          String?  // Tamaño / dimensiones
+  capacity      String?  // Capacidad (para vasos, shakers, etc)
+  price         String?  // Precio aproximado
+  uses          String?  @db.Text  // Usos principales
+  howToUse      String?  @db.Text  // Cómo usar
+  maintenance   String?  @db.Text  // Mantenimiento y cuidado
+  tips          String?  @db.Text  // Consejos de uso
+  alternatives  String?  @db.Text  // Alternativas
+  isProfessional Boolean @default(false)
+  isEssential   Boolean  @default(false)
+  isFeatured    Boolean  @default(false)
+  origin        String?  // País de origen
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("tools")
 }
 
 model CocktailIngredient {

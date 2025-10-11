@@ -14,6 +14,8 @@ export const MAX_FILE_SIZES = {
   spirits: 3 * 1024 * 1024, // 3MB
   beers: 3 * 1024 * 1024, // 3MB
   wines: 3 * 1024 * 1024, // 3MB
+  techniques: 3 * 1024 * 1024, // 3MB
+  tools: 3 * 1024 * 1024, // 3MB
   users: 2 * 1024 * 1024, // 2MB
 }
 

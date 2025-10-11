@@ -17,48 +17,13 @@ import {
 import { ImageUpload } from '@/components/ui/ImageUpload'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-
-const categories = [
-  { value: 'CLASSIC', label: 'Clásico' },
-  { value: 'TROPICAL', label: 'Tropical' },
-  { value: 'MODERN', label: 'Moderno' },
-  { value: 'MOCKTAIL', label: 'Sin Alcohol' },
-  { value: 'SHOT', label: 'Shot' },
-  { value: 'PUNCH', label: 'Punch' },
-  { value: 'HOT_DRINK', label: 'Bebida Caliente' },
-  { value: 'FROZEN', label: 'Frozen' }
-]
-
-const difficulties = [
-  { value: 'EASY', label: 'Fácil' },
-  { value: 'MEDIUM', label: 'Medio' },
-  { value: 'HARD', label: 'Difícil' },
-  { value: 'EXPERT', label: 'Experto' }
-]
-
-const glassTypes = [
-  'Copa Martini',
-  'Vaso Old Fashioned',
-  'Copa de Vino',
-  'Vaso Highball',
-  'Copa Margarita',
-  'Vaso Collins',
-  'Copa Coupé',
-  'Vaso Rocks',
-  'Copa Flute',
-  'Vaso Shot'
-]
-
-const techniques = [
-  'Shake',
-  'Stir',
-  'Build',
-  'Muddle',
-  'Blend',
-  'Layer',
-  'Roll',
-  'Whip'
-]
+import { 
+  COCKTAIL_CATEGORIES,
+  DIFFICULTY_LEVELS, 
+  GLASS_TYPES, 
+  PREPARATION_TECHNIQUES,
+  INGREDIENT_UNITS
+} from '@/lib/constants'
 
 export default function NewCocktailPage() {
   const router = useRouter()
@@ -316,7 +281,7 @@ export default function NewCocktailPage() {
                   onChange={(e) => handleInputChange('category', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  {categories.map(category => (
+                  {COCKTAIL_CATEGORIES.map(category => (
                     <option key={category.value} value={category.value}>
                       {category.label}
                     </option>
@@ -333,7 +298,7 @@ export default function NewCocktailPage() {
                   onChange={(e) => handleInputChange('difficulty', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  {difficulties.map(difficulty => (
+                  {DIFFICULTY_LEVELS.map(difficulty => (
                     <option key={difficulty.value} value={difficulty.value}>
                       {difficulty.label}
                     </option>
@@ -441,11 +406,11 @@ export default function NewCocktailPage() {
                       }}
                       className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
-                      <option value="ml">ml</option>
-                      <option value="oz">oz</option>
-                      <option value="dash">dash</option>
-                      <option value="slice">slice</option>
-                      <option value="sprig">sprig</option>
+                      {INGREDIENT_UNITS.map(unit => (
+                        <option key={unit} value={unit}>
+                          {unit}
+                        </option>
+                      ))}
                     </select>
                     
                     <div className="flex items-center gap-2">
@@ -566,7 +531,7 @@ export default function NewCocktailPage() {
                   onChange={(e) => handleInputChange('glass', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  {glassTypes.map(glass => (
+                  {GLASS_TYPES.map(glass => (
                     <option key={glass} value={glass}>
                       {glass}
                     </option>
@@ -583,7 +548,7 @@ export default function NewCocktailPage() {
                   onChange={(e) => handleInputChange('technique', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  {techniques.map(technique => (
+                  {PREPARATION_TECHNIQUES.map(technique => (
                     <option key={technique} value={technique}>
                       {technique}
                     </option>

@@ -30,6 +30,8 @@ export const MAX_FILE_SIZES = {
   spirits: 3 * 1024 * 1024, // 3MB
   beers: 3 * 1024 * 1024, // 3MB
   wines: 3 * 1024 * 1024, // 3MB
+  techniques: 3 * 1024 * 1024, // 3MB
+  tools: 3 * 1024 * 1024, // 3MB
   users: 2 * 1024 * 1024, // 2MB
 }
 
@@ -37,7 +39,7 @@ export const MAX_FILE_SIZES = {
 export async function createUploadUrl(
   fileName: string,
   contentType: string,
-  folder: 'cocktails' | 'ingredients' | 'spirits' | 'users' = 'cocktails'
+  folder: 'cocktails' | 'ingredients' | 'spirits' | 'beers' | 'wines' | 'techniques' | 'tools' | 'users' = 'cocktails'
 ): Promise<string> {
   const key = `${folder}/${fileName}`
   
@@ -61,7 +63,9 @@ export async function createUploadUrl(
 
 // Generar URL pública para acceder a imagen
 export function getPublicUrl(key: string): string {
-  return `https://pub-${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${key}`
+  // Usar el dominio público real de R2 (no el account ID)
+  const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || `pub-${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev`
+  return `https://${publicDomain}/${key}`
 }
 
 // Generar URL firmada para descargar imagen
@@ -102,7 +106,7 @@ export function validateImageType(contentType: string): boolean {
 }
 
 // Validar tamaño de archivo
-export function validateFileSize(size: number, type: 'cocktails' | 'ingredients' | 'spirits' | 'beers' | 'wines' | 'users'): boolean {
+export function validateFileSize(size: number, type: 'cocktails' | 'ingredients' | 'spirits' | 'beers' | 'wines' | 'techniques' | 'tools' | 'users'): boolean {
   return size <= MAX_FILE_SIZES[type]
 }
 

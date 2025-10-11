@@ -50,9 +50,53 @@ export default function NewWinePage() {
     abv: '',
     vintage: '',
     origin: '',
+    region: '',
+    denomination: '',
+    grapeVariety: '',
+    winery: '',
+    servingTemp: '',
     price: '',
-    isPremium: false
+    isPremium: false,
+    // Notas de cata
+    tastingNotes: '',
+    color: '',
+    aroma: '',
+    taste: '',
+    body: '',
+    acidity: '',
+    tannins: '',
+    finish: '',
+    pairing: '',
+    awards: ''
   })
+
+  // Función para obtener el código de país (ISO 3166-1 alpha-2) desde el nombre del país
+  const getCountryCode = (countryName: string): string => {
+    const countryMap: { [key: string]: string } = {
+      'méxico': 'MX', 'mexico': 'MX',
+      'españa': 'ES', 'spain': 'ES',
+      'francia': 'FR', 'france': 'FR',
+      'italia': 'IT', 'italy': 'IT',
+      'portugal': 'PT',
+      'alemania': 'DE', 'germany': 'DE',
+      'argentina': 'AR',
+      'chile': 'CL',
+      'estados unidos': 'US', 'usa': 'US', 'eeuu': 'US',
+      'australia': 'AU',
+      'nueva zelanda': 'NZ', 'new zealand': 'NZ',
+      'sudáfrica': 'ZA', 'south africa': 'ZA',
+      'austria': 'AT',
+      'grecia': 'GR', 'greece': 'GR',
+      'hungría': 'HU', 'hungary': 'HU',
+      'rumania': 'RO', 'romania': 'RO'
+    }
+    
+    const normalized = countryName.toLowerCase().trim()
+    return countryMap[normalized] || ''
+  }
+
+  const countryCode = getCountryCode(formData.origin)
+  const flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : ''
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -99,8 +143,23 @@ export default function NewWinePage() {
         abv: formData.abv,
         vintage: formData.vintage,
         origin: formData.origin,
+        region: formData.region,
+        denomination: formData.denomination,
+        grapeVariety: formData.grapeVariety,
+        winery: formData.winery,
+        servingTemp: formData.servingTemp,
         price: formData.price,
-        isPremium: formData.isPremium
+        isPremium: formData.isPremium,
+        tastingNotes: formData.tastingNotes,
+        color: formData.color,
+        aroma: formData.aroma,
+        taste: formData.taste,
+        body: formData.body,
+        acidity: formData.acidity,
+        tannins: formData.tannins,
+        finish: formData.finish,
+        pairing: formData.pairing,
+        awards: formData.awards
       }
 
       const response = await fetch('/api/admin/wines', {
@@ -278,6 +337,229 @@ export default function NewWinePage() {
               maxImages={1}
             />
           </motion.div>
+
+          {/* Origen y Producción */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700"
+          >
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              Origen y Producción
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  País de Origen
+                </label>
+                <div className="relative">
+                  <Input
+                    value={formData.origin}
+                    onChange={(e) => handleInputChange('origin', e.target.value)}
+                    placeholder="Ej: Francia, España, Italia"
+                    className={flagUrl ? 'pr-12' : ''}
+                  />
+                  {flagUrl && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <img 
+                        src={flagUrl} 
+                        alt={formData.origin}
+                        className="h-6 w-auto rounded shadow-sm"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+                {formData.origin && !countryCode && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    País no reconocido. Verifica la ortografía.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Región
+                </label>
+                <Input
+                  value={formData.region}
+                  onChange={(e) => handleInputChange('region', e.target.value)}
+                  placeholder="Ej: Bordeaux, Rioja, Toscana"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Denominación de Origen
+                </label>
+                <Input
+                  value={formData.denomination}
+                  onChange={(e) => handleInputChange('denomination', e.target.value)}
+                  placeholder="Ej: D.O.C., A.O.C., D.O.Ca."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Variedad de Uva
+                </label>
+                <Input
+                  value={formData.grapeVariety}
+                  onChange={(e) => handleInputChange('grapeVariety', e.target.value)}
+                  placeholder="Ej: Cabernet Sauvignon, Tempranillo"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Bodega / Viñedo
+                </label>
+                <Input
+                  value={formData.winery}
+                  onChange={(e) => handleInputChange('winery', e.target.value)}
+                  placeholder="Ej: Château Margaux"
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Notas de Cata */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700"
+          >
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              Notas de Cata
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Notas de Cata (Breve)
+                </label>
+                <Textarea
+                  value={formData.tastingNotes}
+                  onChange={(e) => handleInputChange('tastingNotes', e.target.value)}
+                  rows={3}
+                  placeholder="Resumen general de las características organolépticas..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Color
+                  </label>
+                  <Input
+                    value={formData.color}
+                    onChange={(e) => handleInputChange('color', e.target.value)}
+                    placeholder="Ej: Rojo rubí, Dorado pálido"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Cuerpo
+                  </label>
+                  <Select
+                    value={formData.body}
+                    onChange={(e) => handleInputChange('body', e.target.value)}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="Ligero">Ligero</option>
+                    <option value="Medio">Medio</option>
+                    <option value="Completo">Completo</option>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Aroma
+                </label>
+                <Textarea
+                  value={formData.aroma}
+                  onChange={(e) => handleInputChange('aroma', e.target.value)}
+                  rows={2}
+                  placeholder="Describe los aromas: frutas, especias, madera..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Sabor en Boca
+                </label>
+                <Textarea
+                  value={formData.taste}
+                  onChange={(e) => handleInputChange('taste', e.target.value)}
+                  rows={2}
+                  placeholder="Describe el sabor: dulzor, acidez, taninos..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Acidez
+                  </label>
+                  <Select
+                    value={formData.acidity}
+                    onChange={(e) => handleInputChange('acidity', e.target.value)}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="Baja">Baja</option>
+                    <option value="Media">Media</option>
+                    <option value="Alta">Alta</option>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Taninos (solo tintos)
+                  </label>
+                  <Select
+                    value={formData.tannins}
+                    onChange={(e) => handleInputChange('tannins', e.target.value)}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="Suaves">Suaves</option>
+                    <option value="Medios">Medios</option>
+                    <option value="Firmes">Firmes</option>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Final / Persistencia
+                </label>
+                <Textarea
+                  value={formData.finish}
+                  onChange={(e) => handleInputChange('finish', e.target.value)}
+                  rows={2}
+                  placeholder="Describe el final en boca: largo, corto, persistente..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Maridaje Recomendado
+                </label>
+                <Textarea
+                  value={formData.pairing}
+                  onChange={(e) => handleInputChange('pairing', e.target.value)}
+                  rows={2}
+                  placeholder="Ej: Carnes rojas, quesos curados, chocolate..."
+                />
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Sidebar */}
@@ -323,13 +605,16 @@ export default function NewWinePage() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Origen
+                  Temperatura de Servicio
                 </label>
                 <Input
-                  value={formData.origin}
-                  onChange={(e) => handleInputChange('origin', e.target.value)}
-                  placeholder="Bordeaux, Francia"
+                  value={formData.servingTemp}
+                  onChange={(e) => handleInputChange('servingTemp', e.target.value)}
+                  placeholder="Ej: 16-18°C"
                 />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Blancos: 8-12°C, Tintos: 14-18°C
+                </p>
               </div>
               
               <div>
@@ -342,6 +627,18 @@ export default function NewWinePage() {
                   placeholder="150.00"
                   type="number"
                   step="0.01"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Premios y Reconocimientos
+                </label>
+                <Textarea
+                  value={formData.awards}
+                  onChange={(e) => handleInputChange('awards', e.target.value)}
+                  rows={3}
+                  placeholder="Ej: 94 puntos Robert Parker, Medalla de Oro..."
                 />
               </div>
             </div>

@@ -67,8 +67,23 @@ export async function POST(request: NextRequest) {
       abv,
       vintage,
       origin,
+      region,
+      denomination,
+      grapeVariety,
+      winery,
+      servingTemp,
       price,
-      isPremium
+      isPremium,
+      tastingNotes,
+      color,
+      aroma,
+      taste,
+      body: wineBody,
+      acidity,
+      tannins,
+      finish,
+      pairing,
+      awards
     } = body
 
     // Validar datos requeridos
@@ -92,8 +107,23 @@ export async function POST(request: NextRequest) {
         abv: abv ? parseFloat(abv) : null,
         vintage: vintage ? parseInt(vintage) : null,
         origin,
+        region,
+        denomination,
+        grapeVariety,
+        winery,
+        servingTemp,
         price: price ? parseFloat(price) : null,
-        isPremium: isPremium || false
+        isPremium: isPremium || false,
+        tastingNotes,
+        color,
+        aroma,
+        taste,
+        body: wineBody,
+        acidity,
+        tannins,
+        finish,
+        pairing,
+        awards
       }
     })
 

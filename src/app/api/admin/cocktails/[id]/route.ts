@@ -65,6 +65,9 @@ export async function PUT(
       abv,
       isClassic,
       isFeatured,
+      story,
+      trivia,
+      ingredientsText,
       ingredients,
       instructions
     } = body
@@ -94,7 +97,10 @@ export async function PUT(
         time,
         abv: abv ? parseFloat(abv) : null,
         isClassic: isClassic || false,
-        isFeatured: isFeatured || false
+        isFeatured: isFeatured || false,
+        story,
+        trivia,
+        ingredientsText: ingredientsText || []
       }
     })
 
@@ -129,10 +135,10 @@ export async function PUT(
       // Crear nuevas instrucciones
       if (instructions.length > 0) {
         await prisma.cocktailInstruction.createMany({
-          data: instructions.map((instruction: string, index: number) => ({
+          data: instructions.map((instruction: any, index: number) => ({
             cocktailId: id,
-            step: index + 1,
-            instruction,
+            step: instruction.step || index + 1,
+            instruction: typeof instruction === 'string' ? instruction : instruction.instruction,
             order: index + 1
           }))
         })

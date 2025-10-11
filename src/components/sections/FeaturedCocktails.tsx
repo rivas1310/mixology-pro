@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, Clock, Users, Star, ArrowRight, Filter } from 'lucide-react'
 import { useApp } from '@/app/providers'
+import { COCKTAIL_CATEGORIES } from '@/lib/constants'
 
 const featuredCocktails = [
   {
@@ -106,9 +107,11 @@ const featuredCocktails = [
 
 const categories = [
   { id: 'all', name: 'Todos', count: featuredCocktails.length },
-  { id: 'CLASSIC', name: 'Clásicos', count: featuredCocktails.filter(c => c.category === 'CLASSIC').length },
-  { id: 'TROPICAL', name: 'Tropicales', count: featuredCocktails.filter(c => c.category === 'TROPICAL').length },
-  { id: 'MOCKTAIL', name: 'Sin Alcohol', count: featuredCocktails.filter(c => c.category === 'MOCKTAIL').length },
+  ...COCKTAIL_CATEGORIES.map(cat => ({
+    id: cat.value,
+    name: cat.label,
+    count: featuredCocktails.filter(c => c.category === cat.value).length
+  }))
 ]
 
 export function FeaturedCocktails() {

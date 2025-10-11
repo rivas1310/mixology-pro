@@ -51,9 +51,51 @@ export default function NewBeerPage() {
     abv: '',
     ibu: '',
     origin: '',
+    state: '',
+    servingTemp: '',
     price: '',
-    isCraft: true
+    isCraft: true,
+    // Notas de cata
+    tastingNotes: '',
+    color: '',
+    aroma: '',
+    flavor: '',
+    pairing: '',
+    glassType: ''
   })
+
+  // Función para obtener el código de país (ISO 3166-1 alpha-2) desde el nombre del país
+  const getCountryCode = (countryName: string): string => {
+    const countryMap: { [key: string]: string } = {
+      'méxico': 'MX', 'mexico': 'MX',
+      'estados unidos': 'US', 'usa': 'US', 'eeuu': 'US',
+      'alemania': 'DE', 'germany': 'DE',
+      'bélgica': 'BE', 'belgica': 'BE', 'belgium': 'BE',
+      'reino unido': 'GB', 'inglaterra': 'GB', 'uk': 'GB', 'gran bretaña': 'GB',
+      'irlanda': 'IE', 'ireland': 'IE',
+      'holanda': 'NL', 'países bajos': 'NL', 'netherlands': 'NL',
+      'españa': 'ES', 'spain': 'ES',
+      'república checa': 'CZ', 'checa': 'CZ', 'czech': 'CZ',
+      'japón': 'JP', 'japan': 'JP',
+      'china': 'CN',
+      'brasil': 'BR', 'brazil': 'BR',
+      'argentina': 'AR',
+      'chile': 'CL',
+      'colombia': 'CO',
+      'perú': 'PE', 'peru': 'PE',
+      'canadá': 'CA', 'canada': 'CA',
+      'australia': 'AU',
+      'francia': 'FR', 'france': 'FR',
+      'italia': 'IT', 'italy': 'IT',
+      'portugal': 'PT'
+    }
+    
+    const normalized = countryName.toLowerCase().trim()
+    return countryMap[normalized] || ''
+  }
+
+  const countryCode = getCountryCode(formData.origin)
+  const flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : ''
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -100,8 +142,16 @@ export default function NewBeerPage() {
         abv: formData.abv,
         ibu: formData.ibu,
         origin: formData.origin,
+        state: formData.state,
+        servingTemp: formData.servingTemp,
         price: formData.price,
-        isCraft: formData.isCraft
+        isCraft: formData.isCraft,
+        tastingNotes: formData.tastingNotes,
+        color: formData.color,
+        aroma: formData.aroma,
+        flavor: formData.flavor,
+        pairing: formData.pairing,
+        glassType: formData.glassType
       }
 
       const response = await fetch('/api/admin/beers', {
@@ -279,6 +329,92 @@ export default function NewBeerPage() {
               maxImages={1}
             />
           </motion.div>
+
+          {/* Tasting Notes */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700"
+          >
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              Notas de Cata
+            </h2>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Notas de Cata (Breve)
+                </label>
+                <Textarea
+                  value={formData.tastingNotes}
+                  onChange={(e) => handleInputChange('tastingNotes', e.target.value)}
+                  rows={3}
+                  placeholder="Resumen general de las características organolépticas..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Color
+                  </label>
+                  <Input
+                    value={formData.color}
+                    onChange={(e) => handleInputChange('color', e.target.value)}
+                    placeholder="Ej: Dorado pálido, Ámbar, Negro"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Tipo de Vaso
+                  </label>
+                  <Input
+                    value={formData.glassType}
+                    onChange={(e) => handleInputChange('glassType', e.target.value)}
+                    placeholder="Ej: Pinta, Tulipa, Flauta, Jarra"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Aroma
+                </label>
+                <Textarea
+                  value={formData.aroma}
+                  onChange={(e) => handleInputChange('aroma', e.target.value)}
+                  rows={2}
+                  placeholder="Describe los aromas: malta, lúpulo, frutas, especias..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Sabor
+                </label>
+                <Textarea
+                  value={formData.flavor}
+                  onChange={(e) => handleInputChange('flavor', e.target.value)}
+                  rows={2}
+                  placeholder="Describe el sabor en boca: dulzor, amargor, cuerpo..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Maridaje Recomendado
+                </label>
+                <Textarea
+                  value={formData.pairing}
+                  onChange={(e) => handleInputChange('pairing', e.target.value)}
+                  rows={2}
+                  placeholder="Ej: Carnes asadas, mariscos, quesos suaves..."
+                />
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Sidebar */}
@@ -322,13 +458,58 @@ export default function NewBeerPage() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Origen
+                  País de Origen
+                </label>
+                <div className="relative">
+                  <Input
+                    value={formData.origin}
+                    onChange={(e) => handleInputChange('origin', e.target.value)}
+                    placeholder="Ej: México, Alemania, Bélgica"
+                    className={flagUrl ? 'pr-12' : ''}
+                  />
+                  {flagUrl && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <img 
+                        src={flagUrl} 
+                        alt={formData.origin}
+                        className="h-6 w-auto rounded shadow-sm"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+                {formData.origin && !countryCode && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    País no reconocido. Verifica la ortografía.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Estado / Región
                 </label>
                 <Input
-                  value={formData.origin}
-                  onChange={(e) => handleInputChange('origin', e.target.value)}
-                  placeholder="México"
+                  value={formData.state}
+                  onChange={(e) => handleInputChange('state', e.target.value)}
+                  placeholder="Ej: Jalisco, Bavaria, Flandes"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Temperatura Recomendada
+                </label>
+                <Input
+                  value={formData.servingTemp}
+                  onChange={(e) => handleInputChange('servingTemp', e.target.value)}
+                  placeholder="Ej: 4-7°C"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Lagers: 2-4°C, Ales: 4-7°C, Stouts: 6-8°C
+                </p>
               </div>
               
               <div>

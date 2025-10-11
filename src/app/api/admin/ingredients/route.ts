@@ -67,7 +67,23 @@ export async function POST(request: NextRequest) {
       nutrition,
       storage,
       shelfLife,
-      isEssential
+      isEssential,
+      abv,
+      flavor,
+      intensity,
+      color,
+      aroma,
+      texture,
+      uses,
+      substitutes,
+      preparation,
+      pairings,
+      benefits,
+      precautions,
+      brand,
+      price,
+      volume,
+      concentration
     } = body
 
     // Validar datos requeridos
@@ -92,7 +108,23 @@ export async function POST(request: NextRequest) {
         nutrition: nutrition ? JSON.parse(nutrition) : null,
         storage,
         shelfLife,
-        isEssential: isEssential || false
+        isEssential: isEssential || false,
+        abv,
+        flavor,
+        intensity,
+        color,
+        aroma,
+        texture,
+        uses,
+        substitutes,
+        preparation,
+        pairings,
+        benefits,
+        precautions,
+        brand,
+        price,
+        volume,
+        concentration
       }
     })
 

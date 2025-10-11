@@ -67,8 +67,16 @@ export async function POST(request: NextRequest) {
       abv,
       ibu,
       origin,
+      state,
+      servingTemp,
       price,
-      isCraft
+      isCraft,
+      tastingNotes,
+      color,
+      aroma,
+      flavor,
+      pairing,
+      glassType
     } = body
 
     // Validar datos requeridos
@@ -92,8 +100,18 @@ export async function POST(request: NextRequest) {
         abv: abv ? parseFloat(abv) : null,
         ibu: ibu ? parseInt(ibu) : null,
         origin,
+        state,
+        servingTemp,
         price: price ? parseFloat(price) : null,
-        isCraft: isCraft || false
+        isCraft: isCraft || false,
+        isPremium: isCraft || false,
+        tastingNotes,
+        color,
+        aroma,
+        flavor,
+        pairing,
+        glassType,
+        rating: 4.0
       }
     })
 
