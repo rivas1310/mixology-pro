@@ -145,19 +145,7 @@ export function IngredientsSearch() {
             Selecciona los ingredientes que tienes disponibles y descubre qué cócteles puedes preparar
           </p>
           
-          {/* Botón de prueba temporal */}
-          <div className="mt-8">
-            <a 
-              href="/ingredients/fruits/test"
-              className="inline-block px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.href = '/ingredients/fruits/test';
-              }}
-            >
-              🧪 PRUEBA: Ir a Frutas (Click Aquí)
-            </a>
-          </div>
+          {/* Botón de prueba temporal - REMOVIDO */}
         </motion.div>
 
         <div className="max-w-6xl mx-auto">
@@ -179,17 +167,13 @@ export function IngredientsSearch() {
                       {category.name}
                     </h3>
                   </div>
-                  <a 
-                    href="/ingredients/fruits/test"
+                  <Link 
+                    href={`/ingredients/${category.id}`}
                     className="flex items-center gap-1 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      window.location.href = '/ingredients/fruits/test';
-                    }}
                   >
                     Ver más
                     <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                  </a>
+                  </Link>
                 </div>
                 
                 <div className="space-y-2">
