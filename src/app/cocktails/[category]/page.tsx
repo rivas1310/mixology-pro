@@ -146,9 +146,18 @@ async function fetchCocktails(category: string, difficulty?: string, search?: st
       params.append('difficulty', difficulty)
     }
     
-    const baseUrl = typeof window !== 'undefined' ? '' : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const url = `${baseUrl}/api/cocktails?${params.toString()}`
-    const response = await fetch(url, { cache: 'no-store' })
+    // Construir URL absoluta para SSR
+    const getApiUrl = () => {
+      if (typeof window !== 'undefined') {
+        return `/api/cocktails?${params.toString()}`
+      }
+      const baseUrl = process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}` 
+        : 'http://localhost:3000'
+      return `${baseUrl}/api/cocktails?${params.toString()}`
+    }
+    
+    const response = await fetch(getApiUrl(), { cache: 'no-store' })
     
     if (!response.ok) {
       throw new Error('Error al cargar cócteles')
