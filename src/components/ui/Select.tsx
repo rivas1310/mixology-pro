@@ -1,21 +1,28 @@
 import { SelectHTMLAttributes, forwardRef } from 'react'
 import { cn } from '@/lib/utils'
+import { ChevronDown } from 'lucide-react'
 
-interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {}
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  variant?: 'default' | 'gold'
+}
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, variant = 'default', ...props }, ref) => {
     return (
-      <select
-        className={cn(
-          'flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white',
-          className
-        )}
-        ref={ref}
-        {...props}
-      >
-        {children}
-      </select>
+      <div className="relative w-full group">
+        <select
+          className={cn(
+            'input appearance-none pr-10',
+            variant === 'gold' && 'input-gold',
+            className
+          )}
+          ref={ref}
+          {...props}
+        >
+          {children}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary-400 transition-colors duration-200 group-focus-within:text-gold-dark" />
+      </div>
     )
   }
 )

@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { spiritCategorySlugFromDb, spiritPublicPath } from '@/lib/publicUrls'
+import { OriginWithFlag } from '@/components/ui/OriginWithFlag'
 import { 
   Search, 
   Filter, 
-  Star, 
   MapPin, 
   Package, 
   Award,
@@ -18,7 +19,6 @@ import {
   BarChart3,
   ArrowRight,
   Clock,
-  DollarSign,
   Heart,
   Apple
 } from 'lucide-react'
@@ -31,6 +31,7 @@ interface Spirit {
   brand?: string
   description?: string
   image?: string
+  imageUrl?: string
   abv?: number
   origin?: string
   price?: number
@@ -38,6 +39,9 @@ interface Spirit {
   isPremium: boolean
   createdAt: string
 }
+
+const DESTILADO_DB = new Set(['WHISKEY', 'VODKA', 'GIN', 'RUM', 'TEQUILA', 'COGNAC'])
+const LICOR_DB = new Set(['LIQUEUR', 'AMARETTO', 'SCHNAPPS'])
 
 const spiritCategories = [
   // DESTILADOS
@@ -49,8 +53,6 @@ const spiritCategories = [
     color: 'from-amber-500 to-orange-600',
     bgColor: 'from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-amber-900/20',
     description: 'Destilados de grano con carácter único',
-    count: 25,
-    examples: ['Scotch Whisky', 'Bourbon', 'Irish Whiskey', 'Japanese Whisky']
   },
   {
     id: 'vodka',
@@ -60,8 +62,6 @@ const spiritCategories = [
     color: 'from-blue-500 to-cyan-600',
     bgColor: 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
     description: 'Destilado neutro y versátil',
-    count: 20,
-    examples: ['Russian Vodka', 'Polish Vodka', 'French Vodka', 'American Vodka']
   },
   {
     id: 'gin',
@@ -71,8 +71,6 @@ const spiritCategories = [
     color: 'from-green-500 to-emerald-600',
     bgColor: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-green-900/20',
     description: 'Aromatizado con bayas de enebro',
-    count: 18,
-    examples: ['London Dry Gin', 'Plymouth Gin', 'Old Tom Gin', 'Navy Strength']
   },
   {
     id: 'rum',
@@ -82,8 +80,6 @@ const spiritCategories = [
     color: 'from-yellow-500 to-amber-600',
     bgColor: 'from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20',
     description: 'Destilado de caña de azúcar',
-    count: 22,
-    examples: ['White Rum', 'Gold Rum', 'Dark Rum', 'Spiced Rum']
   },
   {
     id: 'tequila',
@@ -93,8 +89,6 @@ const spiritCategories = [
     color: 'from-lime-500 to-green-600',
     bgColor: 'from-lime-50 to-green-50 dark:from-lime-900/20 dark:to-green-900/20',
     description: 'Destilado de agave azul',
-    count: 15,
-    examples: ['Blanco', 'Reposado', 'Añejo', 'Extra Añejo']
   },
   {
     id: 'cognac',
@@ -104,8 +98,6 @@ const spiritCategories = [
     color: 'from-purple-500 to-pink-600',
     bgColor: 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20',
     description: 'Brandy francés de prestigio',
-    count: 12,
-    examples: ['VS', 'VSOP', 'XO', 'Hors d\'Age']
   },
   // LICORES
   {
@@ -116,8 +108,6 @@ const spiritCategories = [
     color: 'from-pink-500 to-rose-600',
     bgColor: 'from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20',
     description: 'Bebidas alcohólicas dulces y aromatizadas',
-    count: 30,
-    examples: ['Baileys', 'Kahlúa', 'Cointreau', 'Grand Marnier']
   },
   {
     id: 'amaretto',
@@ -127,8 +117,6 @@ const spiritCategories = [
     color: 'from-red-500 to-pink-600',
     bgColor: 'from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20',
     description: 'Licor de almendras italiano',
-    count: 8,
-    examples: ['Disaronno', 'Lazzaroni', 'Gozio', 'Luxardo']
   },
   {
     id: 'schnapps',
@@ -138,30 +126,44 @@ const spiritCategories = [
     color: 'from-green-500 to-lime-600',
     bgColor: 'from-green-50 to-lime-50 dark:from-green-900/20 dark:to-green-900/20',
     description: 'Licores de frutas alemanes',
-    count: 12,
-    examples: ['Peach Schnapps', 'Apple Schnapps', 'Cherry Schnapps', 'Pear Schnapps']
-  }
+  },
 ]
 
 export default function SpiritsPage() {
   const [spirits, setSpirits] = useState<Spirit[]>([])
+  /** Lista completa (sin búsqueda) para conteos y referencias en tarjetas de categoría */
+  const [allSpiritsCatalog, setAllSpiritsCatalog] = useState<Spirit[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedType, setSelectedType] = useState('all')
 
   useEffect(() => {
+    const loadCatalog = async () => {
+      try {
+        const response = await fetch('/api/spirits')
+        if (response.ok) {
+          const data = await response.json()
+          setAllSpiritsCatalog(data.spirits || data || [])
+        }
+      } catch (e) {
+        console.error('Error cargando catálogo de licores:', e)
+      }
+    }
+    loadCatalog()
+  }, [])
+
+  useEffect(() => {
     const loadSpirits = async () => {
+      setLoading(true)
       try {
         const params = new URLSearchParams()
-        if (selectedCategory !== 'all') {
-          params.append('category', selectedCategory)
-        }
-        if (selectedType !== 'all') {
-          params.append('type', selectedType)
-        }
+        // Categoría y destilado/licor se filtran en cliente (la API no distingue destilado vs licor)
         if (searchTerm) {
           params.append('search', searchTerm)
+        }
+        if (selectedType === 'premium') {
+          params.append('type', 'premium')
         }
 
         const response = await fetch(`/api/spirits?${params.toString()}`)
@@ -177,28 +179,69 @@ export default function SpiritsPage() {
     }
 
     loadSpirits()
-  }, [selectedCategory, selectedType, searchTerm])
+  }, [searchTerm, selectedType])
 
-  const filteredSpirits = spirits.filter(spirit => {
-    const matchesSearch = spirit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         spirit.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         spirit.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesSearch
-  })
+  const filteredSpirits = useMemo(() => {
+    let list = spirits
+    if (selectedCategory !== 'all') {
+      list = list.filter(
+        (s) => spiritCategorySlugFromDb(s.category) === selectedCategory
+      )
+    }
+    if (selectedType === 'destilado') {
+      list = list.filter((s) => DESTILADO_DB.has(s.category.toUpperCase()))
+    } else if (selectedType === 'licor') {
+      list = list.filter((s) => LICOR_DB.has(s.category.toUpperCase()))
+    }
+    return list
+  }, [spirits, selectedCategory, selectedType])
+
+  const premiumCount = useMemo(
+    () => allSpiritsCatalog.filter((s) => s.isPremium).length,
+    [allSpiritsCatalog]
+  )
+
+  const categoryStats = useMemo(() => {
+    const bySlug = (slug: string) =>
+      allSpiritsCatalog.filter(
+        (s) => spiritCategorySlugFromDb(s.category) === slug
+      )
+    const brandSamples = (slug: string, max = 4) => {
+      const names = new Set<string>()
+      for (const s of bySlug(slug)) {
+        if (s.brand?.trim()) names.add(s.brand.trim())
+        if (names.size >= max) break
+      }
+      if (names.size < max) {
+        for (const s of bySlug(slug)) {
+          if (s.name?.trim()) names.add(s.name.trim())
+          if (names.size >= max) break
+        }
+      }
+      return Array.from(names).slice(0, max)
+    }
+    return { bySlug, brandSamples }
+  }, [allSpiritsCatalog])
 
   const getCategoryIcon = (category: string) => {
-    const categoryConfig = spiritCategories.find(cat => cat.id === category.toLowerCase())
+    const slug = spiritCategorySlugFromDb(category)
+    const categoryConfig = spiritCategories.find((cat) => cat.id === slug)
     return categoryConfig?.icon || Package
   }
 
   const getCategoryColor = (category: string) => {
-    const categoryConfig = spiritCategories.find(cat => cat.id === category.toLowerCase())
+    const slug = spiritCategorySlugFromDb(category)
+    const categoryConfig = spiritCategories.find((cat) => cat.id === slug)
     return categoryConfig?.color || 'from-gray-500 to-gray-600'
   }
 
   const getCategoryBgColor = (category: string) => {
-    const categoryConfig = spiritCategories.find(cat => cat.id === category.toLowerCase())
-    return categoryConfig?.bgColor || 'from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-900/20'
+    const slug = spiritCategorySlugFromDb(category)
+    const categoryConfig = spiritCategories.find((cat) => cat.id === slug)
+    return (
+      categoryConfig?.bgColor ||
+      'from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-900/20'
+    )
   }
 
   // Separar destilados y licores
@@ -239,10 +282,10 @@ export default function SpiritsPage() {
             </p>
             <div className="flex justify-center gap-4 text-gray-700 dark:text-gray-300">
               <span className="flex items-center gap-1">
-                <Package className="h-4 w-4" /> {spirits.length} Productos
+                <Package className="h-4 w-4" /> {allSpiritsCatalog.length} en catálogo
               </span>
               <span className="flex items-center gap-1">
-                <Award className="h-4 w-4" /> Premium
+                <Award className="h-4 w-4" /> {premiumCount} premium
               </span>
             </div>
           </motion.div>
@@ -344,31 +387,39 @@ export default function SpiritsPage() {
                       {/* Count */}
                       <div className="flex items-center gap-2 mb-4">
                         <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {category.count}
+                          {categoryStats.bySlug(category.id).length}
                         </span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                          destilados
+                          en catálogo
                         </span>
                       </div>
 
-                      {/* Examples */}
+                      {/* Marcas / referencias reales */}
                       <div className="mb-4">
                         <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Ejemplos:
+                          Referencias:
                         </p>
                         <div className="flex flex-wrap gap-1">
-                          {category.examples.slice(0, 2).map((example, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-xs rounded"
-                            >
-                              {example}
+                          {categoryStats.brandSamples(category.id, 4).length === 0 ? (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              Aún sin productos en esta categoría
                             </span>
-                          ))}
-                          {category.examples.length > 2 && (
-                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded">
-                              +{category.examples.length - 2}
-                            </span>
+                          ) : (
+                            <>
+                              {categoryStats.brandSamples(category.id, 2).map((example, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-xs rounded"
+                                >
+                                  {example}
+                                </span>
+                              ))}
+                              {categoryStats.brandSamples(category.id, 4).length > 2 && (
+                                <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded">
+                                  +{categoryStats.brandSamples(category.id, 4).length - 2}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
@@ -432,31 +483,39 @@ export default function SpiritsPage() {
                       {/* Count */}
                       <div className="flex items-center gap-2 mb-4">
                         <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {category.count}
+                          {categoryStats.bySlug(category.id).length}
                         </span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                          licores
+                          en catálogo
                         </span>
                       </div>
 
-                      {/* Examples */}
+                      {/* Marcas / referencias reales */}
                       <div className="mb-4">
                         <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Ejemplos:
+                          Referencias:
                         </p>
                         <div className="flex flex-wrap gap-1">
-                          {category.examples.slice(0, 2).map((example, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-xs rounded"
-                            >
-                              {example}
+                          {categoryStats.brandSamples(category.id, 4).length === 0 ? (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              Aún sin productos en esta categoría
                             </span>
-                          ))}
-                          {category.examples.length > 2 && (
-                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded">
-                              +{category.examples.length - 2}
-                            </span>
+                          ) : (
+                            <>
+                              {categoryStats.brandSamples(category.id, 2).map((example, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-xs rounded"
+                                >
+                                  {example}
+                                </span>
+                              ))}
+                              {categoryStats.brandSamples(category.id, 4).length > 2 && (
+                                <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded">
+                                  +{categoryStats.brandSamples(category.id, 4).length - 2}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
@@ -518,20 +577,20 @@ export default function SpiritsPage() {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   className="group"
                 >
-                  <Link href={`/spirits/${spirit.category.toLowerCase()}/${spirit.id}`}>
+                  <Link href={spiritPublicPath(spirit)}>
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700">
-                      {/* Image */}
-                      <div className="relative h-48 overflow-hidden">
-                        {spirit.image ? (
+                      {/* Image (sin overlay que oscurezca la foto) */}
+                      <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-900">
+                        {spirit.image || spirit.imageUrl ? (
                           <img
-                            src={spirit.image}
+                            src={(spirit.image || spirit.imageUrl) as string}
                             alt={spirit.name}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
                         ) : (
                           <>
                             <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryBgColor(spirit.category)}`} />
-                            <div className="w-full h-full flex items-center justify-center">
+                            <div className="relative w-full h-full flex items-center justify-center">
                               {(() => {
                                 const IconComponent = getCategoryIcon(spirit.category)
                                 return <IconComponent className="h-16 w-16 text-purple-600 dark:text-purple-400" />
@@ -539,7 +598,6 @@ export default function SpiritsPage() {
                             </div>
                           </>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         
                         {/* Premium Badge */}
                         {spirit.isPremium && (
@@ -581,8 +639,12 @@ export default function SpiritsPage() {
                           </div>
                           {spirit.origin && (
                             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                              <MapPin className="h-4 w-4" />
-                              <span>{spirit.origin}</span>
+                              <MapPin className="h-4 w-4 shrink-0" />
+                              <OriginWithFlag
+                                origin={spirit.origin}
+                                flagWidth={40}
+                                textClassName="text-sm text-gray-600 dark:text-gray-300"
+                              />
                             </div>
                           )}
                           {(spirit as any).denomination && (

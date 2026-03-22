@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener cócteles por categoría
 export async function GET(
@@ -43,7 +44,7 @@ export async function GET(
       ]
     })
 
-    return NextResponse.json(cocktails)
+    return NextResponse.json(cocktails.map(normalizeImageRecord))
 
   } catch (error) {
     console.error('Error obteniendo cócteles por categoría:', error)

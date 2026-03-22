@@ -19,6 +19,7 @@ import {
   Clock,
   DollarSign
 } from 'lucide-react'
+import { OriginWithFlag } from '@/components/ui/OriginWithFlag'
 
 interface Spirit {
   id: string
@@ -127,7 +128,6 @@ async function fetchSpirits(category: string, search?: string) {
     }
     
     const url = `/api/spirits?${params.toString()}`
-    console.log('Fetching spirits from:', url)
     
     const response = await fetch(url)
     
@@ -136,12 +136,9 @@ async function fetchSpirits(category: string, search?: string) {
     }
     
     const data = await response.json()
-    console.log('Spirits API response:', data)
     
     // La API puede devolver { spirits: [...] } o directamente un array
     let spirits = Array.isArray(data) ? data : (data.spirits || [])
-    
-    console.log('Spirits array:', spirits)
     
     return spirits
   } catch (error) {
@@ -155,6 +152,8 @@ export default function CategoryPage() {
   const router = useRouter()
   const category = params?.category as string
   const [searchTerm, setSearchTerm] = useState('')
+  const [premiumFilter, setPremiumFilter] = useState<'all' | 'premium'>('all')
+  const [sortBy, setSortBy] = useState<'name' | 'abv' | 'price'>('name')
   const [spirits, setSpirits] = useState<Spirit[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -163,7 +162,6 @@ export default function CategoryPage() {
       setLoading(true)
       try {
         const data = await fetchSpirits(category, searchTerm)
-        console.log('Data received in component:', data)
         // Asegurarse de que siempre sea un array
         setSpirits(Array.isArray(data) ? data : [])
       } catch (error) {
@@ -181,12 +179,12 @@ export default function CategoryPage() {
   
   if (!categoryInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-cyan-50 dark:from-zinc-950 dark:via-violet-950/45 dark:to-cyan-950/35 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Categoría no encontrada
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+          <p className="text-xl text-violet-700 dark:text-violet-200 mb-8">
             La categoría &quot;{category}&quot; no existe.
           </p>
           <button
@@ -201,23 +199,39 @@ export default function CategoryPage() {
   }
 
   const config = categoryInfo
+  const filteredSpirits = spirits.filter((spirit) => {
+    if (premiumFilter === 'premium' && !spirit.isPremium) {
+      return false
+    }
+    return true
+  })
+
+  const sortedSpirits = [...filteredSpirits].sort((a, b) => {
+    if (sortBy === 'abv') {
+      return (b.abv || 0) - (a.abv || 0)
+    }
+    if (sortBy === 'price') {
+      return (b.price || 0) - (a.price || 0)
+    }
+    return a.name.localeCompare(b.name)
+  })
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-cyan-50 dark:from-zinc-950 dark:via-violet-950/45 dark:to-cyan-950/35 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Cargando licores...</p>
+          <p className="text-violet-700 dark:text-violet-200">Cargando licores...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-cyan-50 dark:from-zinc-950 dark:via-violet-950/45 dark:to-cyan-950/35">
       {/* Header */}
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/20 via-cyan-500/15 to-pink-500/20" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -227,7 +241,7 @@ export default function CategoryPage() {
           >
             <button
               onClick={() => router.back()}
-              className="absolute left-4 top-4 flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+              className="absolute left-4 top-4 flex items-center gap-2 text-violet-700 dark:text-violet-200 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
               Volver
@@ -238,7 +252,7 @@ export default function CategoryPage() {
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-lg text-violet-700 dark:text-violet-200 mb-6">
               {config.description}
             </p>
             <div className="flex justify-center gap-4 text-gray-700 dark:text-gray-300">
@@ -254,18 +268,42 @@ export default function CategoryPage() {
       </section>
 
       {/* Search */}
-      <section className="py-12 bg-white dark:bg-gray-900">
+      <section className="py-12 bg-white/70 dark:bg-zinc-950/35 backdrop-blur border-t border-gray-200 dark:border-gray-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto mb-8">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="max-w-4xl mx-auto mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="relative md:col-span-2">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-violet-600/80 dark:text-violet-300/90" />
               <input
                 type="text"
                 placeholder={`Buscar en ${category.charAt(0).toUpperCase() + category.slice(1)}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm"
+                className="w-full pl-12 pr-4 py-3 text-lg border border-violet-200/80 dark:border-violet-800/40 rounded-xl bg-white/80 dark:bg-zinc-900/60 text-gray-900 dark:text-zinc-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 shadow-sm"
               />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setPremiumFilter(premiumFilter === 'all' ? 'premium' : 'all')}
+                  className={`py-3 rounded-xl border text-sm font-semibold transition-colors ${
+                    premiumFilter === 'premium'
+                      ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400'
+                  }`}
+                >
+                  {premiumFilter === 'premium' ? 'Premium' : 'Todos'}
+                </button>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'name' | 'abv' | 'price')}
+                  className="w-full px-3 py-3 rounded-xl border border-violet-200/80 dark:border-violet-800/40 bg-white/80 dark:bg-zinc-900/60 text-gray-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                >
+                  <option value="name">Nombre</option>
+                  <option value="abv">ABV</option>
+                  <option value="price">Precio</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -279,7 +317,7 @@ export default function CategoryPage() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
               <p className="text-gray-600 dark:text-gray-300">Cargando licores...</p>
             </div>
-          ) : spirits.length === 0 ? (
+          ) : sortedSpirits.length === 0 ? (
             <div className="text-center py-20">
               <div className={`w-16 h-16 bg-gradient-to-br ${config.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
                 <Search className="h-8 w-8 text-white" />
@@ -301,7 +339,7 @@ export default function CategoryPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {spirits.map((spirit, index) => (
+              {sortedSpirits.map((spirit, index) => (
                 <motion.div
                   key={spirit.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -309,7 +347,7 @@ export default function CategoryPage() {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   className="group"
                 >
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700">
+                  <div className="bg-gradient-to-br from-violet-50/90 via-white/85 to-cyan-50/65 dark:from-violet-950/75 dark:via-zinc-950/75 dark:to-cyan-950/35 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-violet-200/60 dark:border-violet-800/30">
                     {/* Image */}
                     <a href={`/spirits/${category}/${spirit.id}`} className="block">
                       <div className="relative h-48 overflow-hidden">
@@ -327,8 +365,7 @@ export default function CategoryPage() {
                             </div>
                           </>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        
+
                         {/* Premium Badge */}
                         {spirit.isPremium && (
                           <div className="absolute top-4 left-4">
@@ -365,8 +402,12 @@ export default function CategoryPage() {
                         </div>
                         {spirit.origin && (
                           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                            <MapPin className="h-4 w-4" />
-                            {spirit.origin}
+                            <MapPin className="h-4 w-4 shrink-0" />
+                            <OriginWithFlag
+                              origin={spirit.origin}
+                              flagWidth={40}
+                              textClassName="text-sm text-gray-600 dark:text-gray-300"
+                            />
                           </div>
                         )}
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">

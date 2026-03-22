@@ -180,7 +180,7 @@ model Wine {
   image         String?
   imageKey      String?  // Clave de la imagen en R2
   abv           Float?
-  vintage       Int?
+  vintage       String?  // Añada libre: año, NV, texto, etc.
   origin        String?
   region        String?
   denomination  String?  // D.O., D.O.C., A.O.C., etc.
@@ -322,6 +322,15 @@ model CocktailReview {
 
   @@unique([userId, cocktailId])
   @@map("cocktail_reviews")
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String?  @default("home")
+  createdAt DateTime @default(now())
+
+  @@map("newsletter_subscribers")
 }
 
 enum Role {

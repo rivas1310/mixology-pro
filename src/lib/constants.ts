@@ -1,13 +1,14 @@
 // Categorías de cócteles unificadas (usando las del admin como estándar)
 export const COCKTAIL_CATEGORIES = [
   { value: 'CLASSIC', label: 'Clásicos' },
+  { value: 'MODERN', label: 'Modernos' },
   { value: 'TROPICAL', label: 'Tropicales' },
   { value: 'DESSERT', label: 'Postres' },
   { value: 'SOUR', label: 'Sours' },
   { value: 'SHOT', label: 'Shots' },
   { value: 'MOCKTAIL', label: 'Sin Alcohol' },
   { value: 'HIGHBALL', label: 'Highballs' },
-  { value: 'MARTINI', label: 'Martinis' }
+  { value: 'MARTINI', label: 'Martinis' },
 ] as const
 
 // Niveles de dificultad unificados

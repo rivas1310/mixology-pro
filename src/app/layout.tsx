@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
-import { Providers } from './providers'
-import { Toaster } from 'react-hot-toast'
-import { Header } from '@/components/layout/Header'
-import { Footer } from '@/components/layout/Footer'
+import { Providers } from '@/app/providers'
+import { AppShell } from '@/components/layout/AppShell'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -38,24 +36,7 @@ export default function RootLayout({
     <html lang="es" className={`${inter.variable} ${playfair.variable}`}>
       <body className="font-sans antialiased">
         <Providers>
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#1e293b',
-                color: '#f8fafc',
-                border: '1px solid #334155',
-              },
-            }}
-          />
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

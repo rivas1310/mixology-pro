@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener cóctel por ID
 export async function GET(
@@ -35,7 +36,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(cocktail)
+    return NextResponse.json(normalizeImageRecord(cocktail))
 
   } catch (error) {
     console.error('Error obteniendo cóctel:', error)
@@ -160,7 +161,7 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json(fullCocktail)
+    return NextResponse.json(fullCocktail ? normalizeImageRecord(fullCocktail) : fullCocktail)
 
   } catch (error) {
     console.error('Error actualizando cóctel:', error)

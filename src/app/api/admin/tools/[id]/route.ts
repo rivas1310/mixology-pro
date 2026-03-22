@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener herramienta por ID
 export async function GET(
@@ -20,7 +21,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(tool)
+    return NextResponse.json(normalizeImageRecord(tool))
 
   } catch (error) {
     console.error('Error obteniendo herramienta:', error)
@@ -89,7 +90,7 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json(tool)
+    return NextResponse.json(normalizeImageRecord(tool))
 
   } catch (error) {
     console.error('Error actualizando herramienta:', error)

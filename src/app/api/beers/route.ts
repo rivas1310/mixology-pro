@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener todas las cervezas
 export async function GET(request: NextRequest) {
@@ -40,8 +41,10 @@ export async function GET(request: NextRequest) {
       ...(limit && { take: parseInt(limit) })
     })
 
+    const normalizedBeers = beers.map(normalizeImageRecord)
+
     return NextResponse.json({
-      beers,
+      beers: normalizedBeers,
       count: beers.length
     })
 

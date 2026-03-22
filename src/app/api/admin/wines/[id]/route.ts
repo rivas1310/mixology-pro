@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
+import { normalizeVintageField, parseOptionalFloat } from '@/lib/wineVintage'
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return 'Error desconocido'
+}
 
 // GET - Obtener vino por ID
 export async function GET(
@@ -20,7 +27,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(wine)
+    return NextResponse.json(normalizeImageRecord(wine))
 
   } catch (error) {
     console.error('Error obteniendo vino:', error)
@@ -81,7 +88,7 @@ export async function PUT(
         image,
         imageKey,
         abv: abv ? parseFloat(abv) : null,
-        vintage: vintage ? parseInt(vintage) : null,
+        vintage: normalizeVintageField(vintage),
         origin,
         region,
         denomination,
@@ -103,12 +110,12 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json(wine)
+    return NextResponse.json(normalizeImageRecord(wine))
 
   } catch (error) {
     console.error('Error actualizando vino:', error)
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      { error: errorMessage(error) },
       { status: 500 }
     )
   }

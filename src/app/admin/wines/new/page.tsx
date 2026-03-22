@@ -28,11 +28,16 @@ const wineCategories = [
   { value: 'FORTIFIED', label: 'Fortificado' }
 ]
 
-const wineTypes = [
-  { value: 'TABLE', label: 'Mesa' },
-  { value: 'PREMIUM', label: 'Premium' },
-  { value: 'RESERVE', label: 'Reserva' },
-  { value: 'GRAN_RESERVE', label: 'Gran Reserva' }
+/** Sugerencias opcionales (autocompletado); puedes escribir cualquier texto. */
+const WINE_TYPE_SUGGESTIONS = [
+  'TABLE',
+  'PREMIUM',
+  'RESERVE',
+  'GRAN_RESERVE',
+  'Mesa',
+  'Premium',
+  'Reserva',
+  'Gran Reserva',
 ]
 
 export default function NewWinePage() {
@@ -42,7 +47,7 @@ export default function NewWinePage() {
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
-    type: 'TABLE',
+    type: '',
     category: 'RED',
     description: '',
     image: '',
@@ -124,7 +129,7 @@ export default function NewWinePage() {
   }
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.brand || !formData.type || !formData.category) {
+    if (!formData.name || !formData.brand || !formData.type.trim() || !formData.category) {
       toast.error('Por favor completa los campos requeridos')
       return
     }
@@ -135,7 +140,7 @@ export default function NewWinePage() {
       const wineData = {
         name: formData.name,
         brand: formData.brand,
-        type: formData.type,
+        type: formData.type.trim(),
         category: formData.category,
         description: formData.description,
         image: formData.image,
@@ -273,17 +278,21 @@ export default function NewWinePage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Tipo *
                 </label>
-                <Select
+                <Input
+                  list="wine-type-suggestions-new"
                   value={formData.type}
                   onChange={(e) => handleInputChange('type', e.target.value)}
+                  placeholder="Ej: Premium, Reserva, Mesa, crianza, joven…"
                   required
-                >
-                  {wineTypes.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
+                />
+                <datalist id="wine-type-suggestions-new">
+                  {WINE_TYPE_SUGGESTIONS.map((s) => (
+                    <option key={s} value={s} />
                   ))}
-                </Select>
+                </datalist>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Texto libre; las sugerencias son opcionales.
+                </p>
               </div>
               
               <div>
@@ -596,11 +605,13 @@ export default function NewWinePage() {
                 <Input
                   value={formData.vintage}
                   onChange={(e) => handleInputChange('vintage', e.target.value)}
-                  placeholder="2020"
-                  type="number"
-                  min="1900"
-                  max="2024"
+                  placeholder="Ej: 2020, NV, sin añada, cosecha 21/22…"
+                  type="text"
+                  inputMode="text"
                 />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Texto libre: año, abreviaturas (NV) o cualquier nota de añada.
+                </p>
               </div>
               
               <div>

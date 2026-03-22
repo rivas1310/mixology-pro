@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener todos los ingredientes
 export async function GET(request: NextRequest) {
@@ -32,8 +33,10 @@ export async function GET(request: NextRequest) {
       prisma.ingredient.count({ where })
     ])
 
+    const normalizedIngredients = ingredients.map(normalizeImageRecord)
+
     return NextResponse.json({
-      ingredients,
+      ingredients: normalizedIngredients,
       pagination: {
         page,
         limit,
@@ -128,7 +131,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(ingredient, { status: 201 })
+    return NextResponse.json(normalizeImageRecord(ingredient), { status: 201 })
 
   } catch (error) {
     console.error('Error creando ingrediente:', error)

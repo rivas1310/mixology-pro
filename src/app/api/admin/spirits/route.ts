@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener todos los licores
 export async function GET(request: NextRequest) {
@@ -33,8 +34,10 @@ export async function GET(request: NextRequest) {
       prisma.spirit.count({ where })
     ])
 
+    const normalizedSpirits = spirits.map(normalizeImageRecord)
+
     return NextResponse.json({
-      spirits,
+      spirits: normalizedSpirits,
       pagination: {
         page,
         limit,
@@ -124,7 +127,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(spirit, { status: 201 })
+    return NextResponse.json(normalizeImageRecord(spirit), { status: 201 })
 
   } catch (error) {
     console.error('Error creando licor:', error)

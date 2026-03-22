@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
   Plus, 
@@ -17,51 +18,24 @@ import {
   Download,
   Upload
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 
-const mockCocktails = [
-  {
-    id: '1',
-    name: 'Margarita Clásica',
-    category: 'CLASSIC',
-    difficulty: 'EASY',
-    prepTime: 3,
-    rating: 4.8,
-    reviews: 1247,
-    isAlcoholic: true,
-    abv: 22,
-    status: 'published',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-01-20'
-  },
-  {
-    id: '2',
-    name: 'Old Fashioned',
-    category: 'CLASSIC',
-    difficulty: 'MEDIUM',
-    prepTime: 5,
-    rating: 4.9,
-    reviews: 2156,
-    isAlcoholic: true,
-    abv: 28,
-    status: 'published',
-    createdAt: '2024-01-10',
-    updatedAt: '2024-01-18'
-  },
-  {
-    id: '3',
-    name: 'Virgin Mojito',
-    category: 'MOCKTAIL',
-    difficulty: 'EASY',
-    prepTime: 3,
-    rating: 4.4,
-    reviews: 567,
-    isAlcoholic: false,
-    abv: 0,
-    status: 'draft',
-    createdAt: '2024-01-25',
-    updatedAt: '2024-01-25'
+interface Cocktail {
+  id: string
+  name: string
+  category: string
+  difficulty: string
+  time?: string
+  rating?: number
+  abv?: number
+  isAlcoholic?: boolean
+  isFeatured?: boolean
+  _count?: {
+    reviews?: number
   }
-]
+  createdAt: string
+  updatedAt: string
+}
 
 const categories = [
   { value: 'all', label: 'Todas las categorías' },
@@ -87,20 +61,79 @@ const statuses = [
 ]
 
 export default function CocktailsPage() {
+  const router = useRouter()
+  const [cocktails, setCocktails] = useState<Cocktail[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedDifficulty, setSelectedDifficulty] = useState('all')
   const [selectedStatus, setSelectedStatus] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
 
-  const filteredCocktails = mockCocktails.filter(cocktail => {
+  useEffect(() => {
+    const loadCocktails = async () => {
+      setLoading(true)
+      try {
+        const response = await fetch('/api/admin/cocktails?limit=200')
+        if (!response.ok) {
+          throw new Error('No se pudieron cargar los cócteles')
+        }
+
+        const data = await response.json()
+        setCocktails(data.cocktails || [])
+      } catch (error) {
+        console.error(error)
+        toast.error('Error cargando cócteles')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadCocktails()
+  }, [])
+
+  const filteredCocktails = cocktails.filter(cocktail => {
     const matchesSearch = cocktail.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || cocktail.category === selectedCategory
     const matchesDifficulty = selectedDifficulty === 'all' || cocktail.difficulty === selectedDifficulty
-    const matchesStatus = selectedStatus === 'all' || cocktail.status === selectedStatus
+    const status = cocktail.isFeatured ? 'published' : 'draft'
+    const matchesStatus = selectedStatus === 'all' || status === selectedStatus
     
     return matchesSearch && matchesCategory && matchesDifficulty && matchesStatus
   })
+
+  const handleDelete = async (id: string, name: string) => {
+    const confirmed = window.confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`/api/admin/cocktails/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.error || 'No se pudo eliminar')
+      }
+
+      setCocktails((prev) => prev.filter((cocktail) => cocktail.id !== id))
+      toast.success('Cóctel eliminado')
+    } catch (error) {
+      console.error(error)
+      toast.error('Error al eliminar cóctel')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-primary-600" />
+          <p className="text-gray-600 dark:text-gray-300">Cargando cócteles...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -129,13 +162,13 @@ export default function CocktailsPage() {
             <Upload className="h-4 w-4" />
             Importar
           </button>
-          <a
-            href="/admin/cocktails/new"
+          <button
+            onClick={() => router.push('/admin/cocktails/new')}
             className="flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors"
           >
             <Plus className="h-4 w-4" />
             Nuevo Cóctel
-          </a>
+          </button>
         </div>
       </motion.div>
 
@@ -263,7 +296,7 @@ export default function CocktailsPage() {
                           {cocktail.name}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {cocktail.isAlcoholic ? `${cocktail.abv}% ABV` : 'Sin alcohol'}
+                          {(cocktail.isAlcoholic ?? (cocktail.abv || 0) > 0) ? `${cocktail.abv || 0}% ABV` : 'Sin alcohol'}
                         </div>
                       </div>
                     </div>
@@ -286,7 +319,7 @@ export default function CocktailsPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300">
                       <Clock className="h-4 w-4" />
-                      {cocktail.prepTime} min
+                      {cocktail.time || '-'}
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -294,32 +327,44 @@ export default function CocktailsPage() {
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 text-yellow-400 fill-current" />
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {cocktail.rating}
+                          {(cocktail.rating || 0).toFixed(1)}
                         </span>
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        ({cocktail.reviews})
+                        ({cocktail._count?.reviews || 0})
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      cocktail.status === 'published' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300' :
-                      cocktail.status === 'draft' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' :
-                      'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      cocktail.isFeatured
+                        ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                        : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
                     }`}>
-                      {cocktail.status}
+                      {cocktail.isFeatured ? 'published' : 'draft'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                      <button
+                        onClick={() => router.push(`/cocktails/${cocktail.category}/${cocktail.id}`)}
+                        className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        title="Ver"
+                      >
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                      <button
+                        onClick={() => router.push(`/admin/cocktails/${cocktail.id}/edit`)}
+                        className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                        title="Editar"
+                      >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                      <button
+                        onClick={() => handleDelete(cocktail.id, cocktail.name)}
+                        className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        title="Eliminar"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                       <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">

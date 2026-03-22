@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener ingrediente por ID
 export async function GET(
@@ -20,7 +21,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(ingredient)
+    return NextResponse.json(normalizeImageRecord(ingredient))
 
   } catch (error) {
     console.error('Error obteniendo ingrediente:', error)
@@ -29,6 +30,19 @@ export async function GET(
       { status: 500 }
     )
   }
+}
+
+function parseNutritionInput(nutrition: unknown) {
+  if (nutrition == null) return null
+  if (typeof nutrition === 'string') {
+    try {
+      return JSON.parse(nutrition)
+    } catch {
+      return null
+    }
+  }
+  if (typeof nutrition === 'object') return nutrition as Record<string, unknown>
+  return null
 }
 
 // PUT - Actualizar ingrediente
@@ -52,7 +66,23 @@ export async function PUT(
       nutrition,
       storage,
       shelfLife,
-      isEssential
+      isEssential,
+      abv,
+      flavor,
+      intensity,
+      color,
+      aroma,
+      texture,
+      uses,
+      substitutes,
+      preparation,
+      pairings,
+      benefits,
+      precautions,
+      brand,
+      price,
+      volume,
+      concentration
     } = body
 
     const ingredient = await prisma.ingredient.update({
@@ -66,14 +96,30 @@ export async function PUT(
         imageKey,
         season,
         origin,
-        nutrition: nutrition ? JSON.parse(nutrition) : null,
+        nutrition: parseNutritionInput(nutrition),
         storage,
         shelfLife,
-        isEssential
+        isEssential: isEssential ?? false,
+        abv,
+        flavor,
+        intensity,
+        color,
+        aroma,
+        texture,
+        uses,
+        substitutes,
+        preparation,
+        pairings,
+        benefits,
+        precautions,
+        brand,
+        price,
+        volume,
+        concentration
       }
     })
 
-    return NextResponse.json(ingredient)
+    return NextResponse.json(normalizeImageRecord(ingredient))
 
   } catch (error) {
     console.error('Error actualizando ingrediente:', error)

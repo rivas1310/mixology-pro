@@ -3,16 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
-  Plus, 
   BarChart3, 
-  Users, 
   Wine, 
   Beer,
   Grape,
   FileText,
-  TrendingUp,
   Eye,
-  Edit
 } from 'lucide-react'
 
 export default function AdminDashboard() {
@@ -22,25 +18,51 @@ export default function AdminDashboard() {
     totalSpirits: 0,
     totalBeers: 0,
     totalWines: 0,
-    totalUsers: 0
   })
 
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Simular carga de estadísticas
     const loadStats = async () => {
       try {
-        // Aquí cargarías las estadísticas reales desde las APIs
-        await new Promise(resolve => setTimeout(resolve, 1000)) // Simular delay
-        
+        const [cocktailsRes, ingredientsRes, spiritsRes, beersRes, winesRes] = await Promise.all([
+          fetch('/api/admin/cocktails?limit=1'),
+          fetch('/api/admin/ingredients?limit=1'),
+          fetch('/api/admin/spirits?limit=1'),
+          fetch('/api/admin/beers?limit=1'),
+          fetch('/api/admin/wines?limit=1'),
+        ])
+
+        const safeTotal = async (res: Response) => {
+          if (!res.ok) return 0
+          try {
+            const data = await res.json()
+            return typeof data?.pagination?.total === 'number' ? data.pagination.total : 0
+          } catch {
+            return 0
+          }
+        }
+
+        const [
+          totalCocktails,
+          totalIngredients,
+          totalSpirits,
+          totalBeers,
+          totalWines,
+        ] = await Promise.all([
+          safeTotal(cocktailsRes),
+          safeTotal(ingredientsRes),
+          safeTotal(spiritsRes),
+          safeTotal(beersRes),
+          safeTotal(winesRes),
+        ])
+
         setStats({
-          totalCocktails: 45,
-          totalIngredients: 120,
-          totalSpirits: 85,
-          totalBeers: 60,
-          totalWines: 40,
-          totalUsers: 1250
+          totalCocktails,
+          totalIngredients,
+          totalSpirits,
+          totalBeers,
+          totalWines,
         })
       } catch (error) {
         console.error('Error cargando estadísticas:', error)

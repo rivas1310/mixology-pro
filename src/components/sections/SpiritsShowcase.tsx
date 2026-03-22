@@ -22,6 +22,7 @@ import {
   Heart,
   Apple
 } from 'lucide-react'
+import { OriginWithFlag } from '@/components/ui/OriginWithFlag'
 
 interface Spirit {
   id: string
@@ -468,8 +469,7 @@ export default function SpiritsShowcase() {
                             </div>
                           </>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        
+
                         {/* Premium Badge */}
                         {spirit.isPremium && (
                           <div className="absolute top-4 left-4">
@@ -510,8 +510,12 @@ export default function SpiritsShowcase() {
                           </div>
                           {spirit.origin && (
                             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                              <MapPin className="h-4 w-4" />
-                              {spirit.origin}
+                              <MapPin className="h-4 w-4 shrink-0" />
+                              <OriginWithFlag
+                                origin={spirit.origin}
+                                flagWidth={40}
+                                textClassName="text-sm text-gray-600 dark:text-gray-300"
+                              />
                             </div>
                           )}
                           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">

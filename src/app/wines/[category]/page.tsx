@@ -29,7 +29,7 @@ interface WineItem {
   region?: string
   grapeVariety?: string
   abv: number
-  vintage?: number
+  vintage?: string | null
   description: string
   image?: string
   rating: number
@@ -132,8 +132,6 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
         
         if (response.ok) {
           const data = await response.json()
-          console.log('Total wines from API:', data.wines?.length || 0)
-          
           const winesData = Array.isArray(data) ? data : (data.wines || [])
           
           // Mapear categorías de URL a categorías de base de datos
@@ -149,18 +147,10 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
           const dbCategory = categoryMap[category.toLowerCase()] || category.toUpperCase()
           const categoryName = categoryInfo?.name || category
           
-          console.log('Looking for wines with category:', dbCategory)
-          
           const filteredData = winesData.filter((wine: any) => {
             const wineCategory = wine.category?.toUpperCase() || ''
-            const match = wineCategory === dbCategory
-            if (match) {
-              console.log('Match found:', wine.name, 'with category', wine.category)
-            }
-            return match
+            return wineCategory === dbCategory
           })
-          
-          console.log('Filtered wines for category:', filteredData.length)
           
           // Transformar datos de la API al formato del componente
           const transformedWines: WineItem[] = filteredData.map((wine: any) => ({
@@ -190,7 +180,6 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
             awards: wine.awards
           }))
           
-          console.log('Final transformed wines:', transformedWines)
           setWines(transformedWines)
         }
       } catch (error) {
@@ -227,15 +216,17 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
     return acc
   }, {} as Record<string, WineItem[]>)
 
+  const subcategoryOptions = Object.keys(groupedWines).sort((a, b) => a.localeCompare(b))
+
   if (!categoryInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-cyan-50 dark:from-zinc-950 dark:via-violet-950/45 dark:to-cyan-950/35 flex items-center justify-center">
         <div className="text-center">
-          <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <Package className="h-16 w-16 text-violet-700 dark:text-violet-300 mx-auto mb-4" />
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Categoría no encontrada
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+          <p className="text-xl text-violet-700 dark:text-violet-200 mb-8">
             La categoría &quot;{category}&quot; no existe.
           </p>
           <Link
@@ -251,25 +242,25 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-cyan-50 dark:from-zinc-950 dark:via-violet-950/45 dark:to-cyan-950/35 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600 dark:text-gray-300">Cargando vinos...</p>
+          <p className="text-xl text-violet-700 dark:text-violet-200">Cargando vinos...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-cyan-50 dark:from-zinc-950 dark:via-violet-950/45 dark:to-cyan-950/35">
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-r ${categoryInfo.bgColor} opacity-10`} />
+        <div className={`absolute inset-0 bg-gradient-to-r ${categoryInfo.bgColor} opacity-25`} />
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <Link
             href="/wines"
-            className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 mb-6 transition-colors"
+            className="inline-flex items-center gap-2 text-violet-700 dark:text-violet-200 hover:text-fuchsia-600 dark:hover:text-fuchsia-300 mb-6 transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
             Volver a Vinos
@@ -281,7 +272,7 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r ${categoryInfo.bgColor} mb-6">
+            <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r ${categoryInfo.bgColor} mb-6`}>
               <categoryInfo.icon className="h-10 w-10 text-white" />
             </div>
             
@@ -289,7 +280,7 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
               {categoryInfo.name}
             </h1>
             
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-violet-700 dark:text-violet-200 max-w-3xl mx-auto">
               {categoryInfo.description}
             </p>
           </motion.div>
@@ -297,18 +288,34 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
       </section>
 
       {/* Search and Filter */}
-      <section className="py-8 border-b border-gray-200 dark:border-gray-700">
+      <section className="py-8 border-b border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-zinc-950/35 backdrop-blur">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="relative flex-1 w-full md:max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="relative md:col-span-2">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-violet-600/80 dark:text-violet-300/90" />
               <input
                 type="text"
                 placeholder="Buscar vinos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 rounded-lg border border-violet-200/80 dark:border-violet-800/40 bg-white/80 dark:bg-zinc-900/60 text-gray-900 dark:text-zinc-100 placeholder-gray-500 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
               />
+            </div>
+
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-violet-600/80 dark:text-violet-300/90" />
+              <select
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                className="w-full appearance-none pl-10 pr-4 py-3 rounded-lg border border-violet-200/80 dark:border-violet-800/40 bg-white/80 dark:bg-zinc-900/60 text-gray-900 dark:text-zinc-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              >
+                <option value="all">Todos los tipos</option>
+                {subcategoryOptions.map((subcategory) => (
+                  <option key={subcategory} value={subcategory}>
+                    {subcategory}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -321,7 +328,7 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
               {selectedSubcategory === 'all' ? `${categoryInfo.name} Disponibles` : `${selectedSubcategory} - ${categoryInfo.name}`}
             </h2>
-            <span className="text-gray-600 dark:text-gray-300">
+            <span className="text-violet-700 dark:text-violet-200">
               {filteredWines.length} vinos encontrados
             </span>
           </div>
@@ -329,7 +336,7 @@ export default function WineCategoryPage({ params }: { params: Promise<{ categor
           {searchTerm && filteredWines.length === 0 ? (
             <div className="text-center py-12">
               <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
+              <p className="text-xl text-violet-700 dark:text-violet-200 mb-4">
                 No se encontraron vinos con &quot;{searchTerm}&quot;
               </p>
               <button
@@ -402,7 +409,7 @@ function WineCard({ wine, categoryInfo, category }: { wine: WineItem; categoryIn
   
   return (
     <Link href={`/wines/${category}/${wine.id}`}>
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 h-full flex flex-col cursor-pointer">
+      <div className="bg-gradient-to-br from-violet-50/90 via-white/85 to-cyan-50/70 dark:from-violet-950/70 dark:via-zinc-950/70 dark:to-cyan-950/40 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-violet-200/60 dark:border-violet-800/35 h-full flex flex-col cursor-pointer">
       {/* Image */}
       <div className="relative h-56 overflow-hidden">
         {wine.image ? (
@@ -574,4 +581,3 @@ function WineCard({ wine, categoryInfo, category }: { wine: WineItem; categoryIn
     </Link>
   )
 }
-

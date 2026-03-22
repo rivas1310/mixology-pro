@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
@@ -24,6 +24,8 @@ const spiritCategories = [
   { value: 'GIN', label: 'Gin' },
   { value: 'TEQUILA', label: 'Tequila' },
   { value: 'COGNAC', label: 'Cognac' },
+  { value: 'AMARETTO', label: 'Amaretto' },
+  { value: 'SCHNAPPS', label: 'Schnapps' },
   { value: 'BRANDY', label: 'Brandy' },
   { value: 'MEZCAL', label: 'Mezcal' },
   { value: 'LIQUEUR', label: 'Licor' }
@@ -80,11 +82,7 @@ export default function EditSpiritPage() {
     { volume: '', packaging: '', ean: '' }
   ])
 
-  useEffect(() => {
-    loadSpirit()
-  }, [id])
-
-  const loadSpirit = async () => {
+  const loadSpirit = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/spirits/${id}`)
       if (response.ok) {
@@ -134,7 +132,11 @@ export default function EditSpiritPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    loadSpirit()
+  }, [loadSpirit])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({

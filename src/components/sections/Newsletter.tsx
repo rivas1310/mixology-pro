@@ -1,234 +1,107 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
-import { 
-  Mail, 
-  Send, 
-  Check, 
-  Sparkles, 
-  Wine, 
-  Star,
-  Gift,
-  Bell
-} from 'lucide-react'
-
-const benefits = [
-  {
-    icon: Wine,
-    title: 'Recetas Exclusivas',
-    description: 'Acceso a cócteles únicos no disponibles públicamente'
-  },
-  {
-    icon: Star,
-    title: 'Técnicas Avanzadas',
-    description: 'Videos tutoriales de técnicas profesionales'
-  },
-  {
-    icon: Gift,
-    title: 'Descuentos Especiales',
-    description: 'Ofertas exclusivas en ingredientes y herramientas'
-  },
-  {
-    icon: Bell,
-    title: 'Actualizaciones',
-    description: 'Nuevas recetas y tendencias cada semana'
-  }
-]
+import { Check, Mail } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 export function Newsletter() {
-  const { ref, inView } = useInView({
-    triggerOnce: true,
-    threshold: 0.1
-  })
-
   const [email, setEmail] = useState('')
   const [isSubscribed, setIsSubscribed] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [inLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email) return
+    if (!email.trim()) return
 
     setIsLoading(true)
-    
-    // Simulate API call
-    setTimeout(() => {
+    setMessage(null)
+
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), source: 'home' }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        setMessage(data.error || 'No se pudo completar la suscripción')
+        return
+      }
+
+      setMessage(
+        data.alreadySubscribed
+          ? 'Ya estabas en la lista. ¡Gracias por tu interés!'
+          : data.message || '¡Listo! Te avisaremos con novedades.'
+      )
       setIsSubscribed(true)
-      setIsLoading(false)
       setEmail('')
-    }, 1500)
+    } catch {
+      setMessage('Error de conexión. Intenta de nuevo.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <section ref={ref} className="py-20 bg-gradient-to-br from-gray-900 via-primary-900 to-accent-900 text-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-white/90 text-sm font-medium mb-6">
-            <Sparkles className="h-4 w-4" />
-            Newsletter Exclusivo
-          </div>
-          
-          <h2 className="text-4xl font-bold mb-4">
-            Mantente al Día con las Últimas Tendencias
-          </h2>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto">
-            Recibe recetas exclusivas, técnicas avanzadas y las últimas tendencias en mixología directamente en tu bandeja de entrada
+    <section className="bg-cream-50 py-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto text-center">
+        <div className="mb-12 space-y-4">
+          <p className="text-sm font-medium text-olive tracking-[0.18em] uppercase">
+            Mantente Actualizado
           </p>
-        </motion.div>
-
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Benefits */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="space-y-6"
-            >
-              <h3 className="text-2xl font-bold mb-6">
-                ¿Qué recibirás?
-              </h3>
-              
-              {benefits.map((benefit, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={inView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.4, delay: 0.3 + (index * 0.1) }}
-                  className="flex items-start gap-4"
-                >
-                  <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <benefit.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-white mb-2">
-                      {benefit.title}
-                    </h4>
-                    <p className="text-white/70">
-                      {benefit.description}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* Newsletter Form */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="relative"
-            >
-              {!isSubscribed ? (
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-                  <h3 className="text-2xl font-bold text-white mb-6">
-                    Suscríbete Ahora
-                  </h3>
-                  
-                  <form onSubmit={handleSubscribe} className="space-y-6">
-                    <div>
-                      <label htmlFor="email" className="block text-white/90 text-sm font-medium mb-2">
-                        Correo Electrónico
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60" />
-                        <input
-                          type="email"
-                          id="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="tu@email.com"
-                          className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isLoading || !email}
-                      className="w-full flex items-center justify-center gap-2 py-3 bg-white text-primary-900 font-semibold rounded-xl hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-                    >
-                      {isLoading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-primary-900 border-t-transparent rounded-full animate-spin" />
-                          Suscribiendo...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4" />
-                          Suscribirse Gratis
-                        </>
-                      )}
-                    </button>
-                  </form>
-
-                  <p className="text-white/70 text-sm mt-4">
-                    Sin spam. Cancela cuando quieras. Más de 5,000 bartenders ya están suscritos.
-                  </p>
-                </div>
-              ) : (
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-green-500/20 backdrop-blur-md rounded-2xl p-8 border border-green-400/30 text-center"
-                >
-                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Check className="h-8 w-8 text-white" />
-                  </div>
-                  
-                  <h3 className="text-2xl font-bold text-white mb-4">
-                    ¡Bienvenido a la Comunidad!
-                  </h3>
-                  
-                  <p className="text-white/80 mb-6">
-                    Gracias por suscribirte. Recibirás tu primer newsletter en las próximas 24 horas.
-                  </p>
-                  
-                  <div className="flex items-center justify-center gap-2 text-green-400">
-                    <Bell className="h-4 w-4" />
-                    <span className="text-sm font-medium">
-                      Verifica tu bandeja de entrada
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </motion.div>
-          </div>
-
-          {/* Trust Indicators */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="text-center mt-16"
-          >
-            <div className="flex flex-wrap items-center justify-center gap-8 text-white/60 text-sm">
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                <span>5,000+ suscriptores</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                <span>Sin spam garantizado</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                <span>Cancelar en cualquier momento</span>
-              </div>
-            </div>
-          </motion.div>
+          <h2 className="text-5xl md:text-6xl font-display text-primary-800 leading-tight">
+            Recibe Recetas Exclusivas
+          </h2>
+          <p className="text-lg text-primary-600 max-w-xl mx-auto">
+            Nuevas recetas, técnicas y tendencias. Sin spam.
+          </p>
         </div>
+
+        {!isSubscribed ? (
+          <form onSubmit={handleSubscribe} className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1 relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  className="w-full border border-beige bg-white py-3 pl-12 pr-4 text-primary-800 placeholder:text-primary-400 transition-all focus:border-gold focus:outline-none focus:ring-0"
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                isLoading={inLoading}
+                className="px-8 sm:w-auto w-full"
+              >
+                Suscribir
+              </Button>
+            </div>
+            {message && !isSubscribed && (
+              <p className="text-sm text-red-600 dark:text-red-400">{message}</p>
+            )}
+            <p className="text-xs text-primary-500">
+              Puedes darte de baja cuando quieras contactando al sitio.
+            </p>
+          </form>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-8 space-y-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-green-300 bg-green-100">
+              <Check className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="mb-1 font-semibold text-primary-800">¡Gracias!</p>
+              <p className="text-sm text-primary-600 max-w-md">{message}</p>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )
 }
-

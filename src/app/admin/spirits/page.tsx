@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Plus, Search, Filter, Edit, Trash2, Wine, Star, Package } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 interface Spirit {
   id: string
@@ -28,15 +29,33 @@ export default function AdminSpiritsPage() {
 
   const loadSpirits = async () => {
     try {
-      const response = await fetch('/api/spirits')
+      const response = await fetch('/api/admin/spirits?limit=200')
       if (response.ok) {
         const data = await response.json()
         setSpirits(data.spirits || [])
       }
     } catch (error) {
       console.error('Error loading spirits:', error)
+      toast.error('Error cargando licores')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    const confirmed = window.confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`/api/admin/spirits/${id}`, { method: 'DELETE' })
+      if (!response.ok) {
+        throw new Error('Error eliminando licor')
+      }
+      setSpirits((prev) => prev.filter((spirit) => spirit.id !== id))
+      toast.success('Licor eliminado')
+    } catch (error) {
+      console.error(error)
+      toast.error('No se pudo eliminar el licor')
     }
   }
 
@@ -195,7 +214,10 @@ export default function AdminSpiritsPage() {
                         >
                           <Edit className="h-4 w-4" />
                         </Link>
-                        <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                        <button
+                          onClick={() => handleDelete(spirit.id, spirit.name)}
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>

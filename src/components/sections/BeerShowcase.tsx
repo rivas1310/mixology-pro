@@ -16,6 +16,7 @@ import {
   BarChart3,
   ExternalLink
 } from 'lucide-react'
+import { beerPublicPath } from '@/lib/publicUrls'
 
 const beerCategories = [
   {
@@ -67,6 +68,7 @@ const beerCategories = [
 const featuredBeers = [
   {
     id: 'corona-extra',
+    category: 'Lagers',
     name: 'Corona Extra',
     type: 'Lager',
     abv: 4.5,
@@ -83,6 +85,7 @@ const featuredBeers = [
   },
   {
     id: 'guinness',
+    category: 'Ales',
     name: 'Guinness Draught',
     type: 'Stout',
     abv: 4.2,
@@ -99,6 +102,7 @@ const featuredBeers = [
   },
   {
     id: 'heineken',
+    category: 'Lagers',
     name: 'Heineken',
     type: 'Lager',
     abv: 5.0,
@@ -115,6 +119,7 @@ const featuredBeers = [
   },
   {
     id: 'stella-artois',
+    category: 'Lagers',
     name: 'Stella Artois',
     type: 'Lager',
     abv: 5.0,
@@ -307,7 +312,7 @@ export function BeerShowcase() {
             >
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700">
                 {/* Image */}
-                <a href={`/beers/${beer.id}`} className="block">
+                <a href={beerPublicPath(beer)} className="block">
                   <div className="relative h-48 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30" />
                     <div className="w-full h-full flex items-center justify-center">
@@ -343,7 +348,7 @@ export function BeerShowcase() {
 
                 {/* Content */}
                 <div className="p-6">
-                  <a href={`/beers/${beer.id}`} className="block">
+                  <a href={beerPublicPath(beer)} className="block">
                     <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                       {beer.name}
                     </h4>
@@ -402,7 +407,7 @@ export function BeerShowcase() {
                   {/* Actions */}
                   <div className="flex items-center gap-2">
                     <a
-                      href={`/beers/${beer.id}`}
+                      href={beerPublicPath(beer)}
                       className="flex-1 flex items-center justify-center gap-2 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-colors"
                     >
                       <BookOpen className="h-4 w-4" />

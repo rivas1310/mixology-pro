@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -21,7 +21,6 @@ import {
   Info,
   Calendar,
   MapPin,
-  TrendingUp,
   ArrowLeft,
   Package,
   Wine,
@@ -30,7 +29,11 @@ import {
   Shield,
   Flame,
   Snowflake,
-  Heart
+  Heart,
+  Beer,
+  Palette,
+  Flower2,
+  UtensilsCrossed,
 } from 'lucide-react'
 
 interface Beer {
@@ -156,6 +159,255 @@ const categoryConfig = {
   }
 }
 
+type CategoryInfoEntry = (typeof categoryConfig)[keyof typeof categoryConfig]
+
+/** Muestra amargor como "35 IBU" (el IBU no es %; si el texto ya trae unidades, no duplicamos). */
+function formatIbuDisplay(ibu: number | undefined | null): string {
+  if (ibu == null || Number.isNaN(ibu)) return '—'
+  return `${ibu} IBU`
+}
+
+/** Añade °C si el valor no indica ya °C / °F u otra unidad. */
+function formatServingTempDisplay(raw: string | undefined | null): string {
+  if (raw == null) return '—'
+  const t = raw.trim()
+  if (t === '') return '—'
+  if (t.includes('°') || /celsius|fahrenheit|º\s*[cf]/i.test(t)) return t
+  return `${t} °C`
+}
+
+function ExpandablePanelText({ text }: { text: string }) {
+  const [open, setOpen] = useState(false)
+  const trimmed = text.trim()
+  const long = trimmed.length > 110
+
+  return (
+    <div>
+      <p
+        className={`text-sm leading-relaxed text-zinc-700 dark:text-zinc-200 ${
+          open || !long ? '' : 'line-clamp-3'
+        }`}
+      >
+        {trimmed}
+      </p>
+      {long && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setOpen((v) => !v)
+          }}
+          className="mt-1.5 text-xs font-semibold text-amber-700 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300"
+        >
+          {open ? 'Ver menos' : 'Ver más'}
+        </button>
+      )}
+    </div>
+  )
+}
+
+function SensorBlock({
+  icon,
+  label,
+  children,
+}: {
+  icon: ReactNode
+  label: string
+  children: ReactNode
+}) {
+  return (
+    <div className="rounded-xl border border-amber-300/70 bg-gradient-to-br from-amber-100/95 via-amber-50/75 to-orange-50/60 p-3 shadow-sm dark:border-amber-700/45 dark:from-amber-900/60 dark:via-amber-800/40 dark:to-orange-900/25">
+      <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-amber-800/90 dark:text-amber-200/80">
+        <span className="text-amber-700 dark:text-amber-300">{icon}</span>
+        {label}
+      </div>
+      <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{children}</div>
+    </div>
+  )
+}
+
+function BeerListingCard({
+  beer,
+  categorySlug,
+  categoryInfo,
+}: {
+  beer: Beer
+  categorySlug: string
+  categoryInfo: CategoryInfoEntry
+}) {
+  const Icon = categoryInfo.icon
+  const countryCode = beer.origin ? getCountryCode(beer.origin) : ''
+
+  return (
+    <Link href={`/beers/${categorySlug}/${beer.id}`} className="group block h-full">
+      <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-violet-300/70 bg-gradient-to-b from-fuchsia-50/90 via-violet-50/80 to-cyan-50/40 shadow-lg ring-1 ring-violet-200/70 transition-all duration-300 hover:-translate-y-1 hover:border-violet-500/80 hover:shadow-violet-500/20 hover:ring-violet-400/30 dark:border-violet-800/35 dark:from-violet-950/80 dark:via-violet-950/55 dark:to-cyan-950/45 dark:ring-violet-500/20 dark:hover:border-violet-500/45 dark:hover:shadow-violet-500/15 dark:hover:ring-violet-400/30">
+        <div className="relative h-56 overflow-hidden">
+          {beer.image ? (
+            <img
+              src={beer.image}
+              alt={beer.name}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div
+              className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${categoryInfo.bgColor}`}
+            >
+              <Icon className="h-20 w-20 text-purple-600 dark:text-purple-400" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+
+          <div className="absolute left-3 right-3 top-3 flex items-start justify-between gap-2">
+            <div className="flex flex-col gap-1.5">
+              {beer.isCraft && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/95 px-2.5 py-1 text-xs font-bold text-white shadow-md backdrop-blur-sm">
+                  <Beer className="h-3.5 w-3.5" />
+                  Artesanal
+                </span>
+              )}
+              {beer.isPremium && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/95 px-2.5 py-1 text-xs font-bold text-zinc-900 shadow-md backdrop-blur-sm">
+                  <Award className="h-3.5 w-3.5" />
+                  Premium
+                </span>
+              )}
+            </div>
+            <span className="shrink-0 rounded-full bg-gradient-to-r from-amber-400/95 to-orange-500/95 px-2.5 py-1 text-sm font-bold text-white shadow-md ring-1 ring-white/25 backdrop-blur-sm">
+              {beer.abv}% vol
+            </span>
+          </div>
+
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <h3 className="text-lg font-bold leading-tight text-white drop-shadow-md sm:text-xl">
+              {beer.name}
+            </h3>
+            <p className="mt-0.5 text-sm text-white/90 drop-shadow">{beer.brewery}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
+          {beer.origin && (
+            <div className="flex items-start gap-2 border-b border-zinc-200 pb-3 dark:border-zinc-800">
+              {countryCode ? (
+                <img
+                  src={`https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`}
+                  alt={beer.origin}
+                  className="mt-0.5 h-5 w-auto rounded shadow-sm"
+                  onError={(e) => {
+                    ;(e.target as HTMLImageElement).style.display = 'none'
+                  }}
+                />
+              ) : (
+                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+              )}
+              <span className="text-sm font-medium leading-snug text-zinc-800 dark:text-zinc-200">
+                {beer.origin}
+                {beer.state && (
+                  <span className="text-zinc-500 dark:text-zinc-400"> • {beer.state}</span>
+                )}
+              </span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="rounded-xl border border-violet-400/85 bg-gradient-to-br from-violet-200/95 via-fuchsia-100/85 to-violet-50/50 p-3 shadow-sm dark:border-violet-700/55 dark:from-violet-900/70 dark:via-fuchsia-800/40 dark:to-cyan-900/25">
+              <div className="mb-1 flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                <span className="text-xs font-semibold text-violet-900/90 dark:text-violet-200/90">IBU</span>
+              </div>
+              <p className="text-xl font-bold tabular-nums leading-tight text-violet-950 dark:text-violet-100">
+                {formatIbuDisplay(beer.ibu)}
+              </p>
+              <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-violet-600/80 dark:text-violet-300/70">
+                amargor
+              </p>
+            </div>
+            <div className="rounded-xl border border-cyan-400/85 bg-gradient-to-br from-cyan-200/95 via-sky-100/85 to-cyan-50/45 p-3 shadow-sm dark:border-cyan-700/55 dark:from-sky-900/70 dark:via-cyan-800/40 dark:to-cyan-900/25">
+              <div className="mb-1 flex items-center gap-2">
+                <Clock className="h-4 w-4 text-sky-600 dark:text-cyan-400" />
+                <span className="text-xs font-semibold text-sky-900/90 dark:text-cyan-200/90">Servir</span>
+              </div>
+              <p className="text-sm font-bold leading-snug text-cyan-950 dark:text-cyan-100">
+                {formatServingTempDisplay(beer.servingTemp)}
+              </p>
+              <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-sky-600/80 dark:text-cyan-300/70">
+                temperatura
+              </p>
+            </div>
+          </div>
+
+          {(beer.color || beer.glassType) && (
+            <div className="grid gap-2.5">
+              {beer.color && (
+                <SensorBlock
+                  icon={<Palette className="h-4 w-4" />}
+                  label="Color"
+                >
+                  {beer.color}
+                </SensorBlock>
+              )}
+              {beer.glassType && (
+                <SensorBlock
+                  icon={<Wine className="h-4 w-4" />}
+                  label="Vaso"
+                >
+                  {beer.glassType}
+                </SensorBlock>
+              )}
+            </div>
+          )}
+
+          {(beer.aroma || beer.flavor) && (
+            <div className="space-y-3">
+              {beer.aroma && (
+                <div>
+                  <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-zinc-500 dark:text-purple-200">
+                    <Flower2 className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400" />
+                    Aroma
+                  </p>
+                  <ExpandablePanelText text={beer.aroma} />
+                </div>
+              )}
+              {beer.flavor && (
+                <div>
+                  <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-zinc-500 dark:text-pink-200">
+                    <Droplets className="h-3.5 w-3.5 text-pink-500 dark:text-pink-400" />
+                    Sabor
+                  </p>
+                  <ExpandablePanelText text={beer.flavor} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {beer.pairing && (
+            <div className="rounded-xl border border-orange-300/70 bg-gradient-to-br from-amber-200/70 via-orange-100/60 to-rose-100/40 p-3 shadow-sm dark:border-orange-700/55 dark:from-amber-900/60 dark:via-orange-800/40 dark:to-rose-800/25">
+              <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-amber-200">
+                <UtensilsCrossed className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                Maridaje
+              </p>
+              <ExpandablePanelText text={beer.pairing} />
+            </div>
+          )}
+
+          {beer.price != null && beer.price > 0 && (
+            <div className="mt-auto border-t border-violet-200/70 bg-violet-50/80 pt-4 dark:border-zinc-800 dark:bg-violet-950/35 dark:via-violet-900/30">
+              <div className="flex items-end justify-between gap-2">
+                <span className="bg-gradient-to-r from-violet-700 to-fuchsia-700 bg-clip-text text-2xl font-bold tracking-tight text-transparent dark:from-violet-300 dark:to-fuchsia-300">
+                  ${beer.price.toFixed(2)}
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 dark:text-violet-200">
+                  por botella
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </article>
+    </Link>
+  )
+}
 
 export default function CategoryBeersPage() {
   const params = useParams()
@@ -171,45 +423,37 @@ export default function CategoryBeersPage() {
     const loadBeers = async () => {
       try {
         setLoading(true)
-        console.log('Loading beers for category:', category)
         
         // Cargar cervezas reales desde la API
         const response = await fetch(`/api/beers?limit=1000`)
-        console.log('API Response status:', response.status)
         
         if (response.ok) {
           const data = await response.json()
-          console.log('Total beers from API:', data.beers?.length || 0)
           
           const beersData = Array.isArray(data) ? data : (data.beers || [])
           
-          // Mapear categorías de URL a categorías de base de datos
-          const categoryMap: { [key: string]: string } = {
-            'lagers': 'LAGER',
-            'ales': 'ALE',
-            'wheat': 'WHEAT',
-            'specialty': 'SPECIALTY',
-            'crafts': 'CRAFT',
-            'imports': 'IMPORT',
-            'nonalcoholic': 'NONALCOHOLIC',
-            'seasonal': 'SEASONAL'
+          // Mapear categorías de URL a categorías de base de datos.
+          // Incluye alias para compatibilidad con datos creados antes
+          // (cuando el admin usaba `category` para subestilos como IPA/Stout/Porter).
+          const categoryMap: { [key: string]: string[] } = {
+            lagers: ['LAGER', 'PILSENER', 'LAMBIC'],
+            ales: ['ALE', 'IPA', 'STOUT', 'PORTER'],
+            wheat: ['WHEAT'],
+            specialty: ['SPECIALTY'],
+            crafts: ['CRAFT'],
+            imports: ['IMPORT'],
+            nonalcoholic: ['NONALCOHOLIC'],
+            seasonal: ['SEASONAL'],
           }
-          
-          const dbCategory = categoryMap[category.toLowerCase()] || category.toUpperCase()
+
+          const dbCategories =
+            categoryMap[category.toLowerCase()] || [category.toUpperCase()]
           const categoryName = categoryInfo?.name || category
-          
-          console.log('Looking for beers with category:', dbCategory)
-          
+
           const filteredData = beersData.filter((beer: any) => {
             const beerCategory = beer.category?.toUpperCase() || ''
-            const match = beerCategory === dbCategory
-            if (match) {
-              console.log('Match found:', beer.name, 'with category', beer.category)
-            }
-            return match
+            return dbCategories.includes(beerCategory)
           })
-          
-          console.log('Filtered beers for category:', filteredData.length)
           
           // Transformar datos de la API al formato del componente
           const transformedBeers: Beer[] = filteredData.map((beer: any) => ({
@@ -238,7 +482,6 @@ export default function CategoryBeersPage() {
             glassType: beer.glassType
           }))
           
-          console.log('Final transformed beers:', transformedBeers)
           setBeers(transformedBeers)
         }
       } catch (error) {
@@ -274,6 +517,7 @@ export default function CategoryBeersPage() {
     acc[subcategory].push(beer)
     return acc
   }, {} as Record<string, Beer[]>)
+  const subcategoryOptions = Object.keys(groupedBeers).sort((a, b) => a.localeCompare(b))
 
   if (!categoryInfo) {
     return (
@@ -375,8 +619,8 @@ export default function CategoryBeersPage() {
                   onChange={(e) => setSelectedSubcategory(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm appearance-none"
                 >
-                  <option value="all">Todas las Subcategorías</option>
-                  {categoryInfo.subcategories.map(subcategory => (
+                  <option value="all">Todos los tipos</option>
+                  {subcategoryOptions.map(subcategory => (
                     <option key={subcategory} value={subcategory}>
                       {subcategory}
                     </option>
@@ -384,15 +628,17 @@ export default function CategoryBeersPage() {
                 </select>
               </div>
 
-              {/* Sort Filter */}
-              <div className="relative">
-                <TrendingUp className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <select className="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm appearance-none">
-                  <option value="name">Ordenar por Nombre</option>
-                  <option value="rating">Ordenar por Rating</option>
-                  <option value="price">Ordenar por Precio</option>
-                  <option value="abv">Ordenar por ABV</option>
-                </select>
+              {/* Actions */}
+              <div className="flex items-center">
+                <button
+                  onClick={() => {
+                    setSearchTerm('')
+                    setSelectedSubcategory('all')
+                  }}
+                  className="w-full py-3 text-lg rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                >
+                  Limpiar filtros
+                </button>
               </div>
             </div>
           </div>
@@ -492,168 +738,12 @@ export default function CategoryBeersPage() {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: (groupIndex * 0.1) + (index * 0.05) }}
-                        className="group"
                       >
-                        <Link href={`/beers/${category}/${beer.id}`}>
-                          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 h-full flex flex-col cursor-pointer">
-                          {/* Image */}
-                          <div className="relative h-56 overflow-hidden">
-                            {beer.image ? (
-                              <img
-                                src={beer.image}
-                                alt={beer.name}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                              />
-                            ) : (
-                              <div className={`w-full h-full bg-gradient-to-br ${categoryInfo.bgColor} flex items-center justify-center`}>
-                                <categoryInfo.icon className="h-20 w-20 text-purple-600 dark:text-purple-400" />
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                            
-                            {/* Badges Container */}
-                            <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
-                              <div className="flex flex-col gap-2">
-                                {beer.isCraft && (
-                                  <span className="px-3 py-1 bg-amber-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full shadow-lg">
-                                    🍺 Artesanal
-                                  </span>
-                                )}
-                                {beer.isPremium && (
-                                  <span className="px-3 py-1 bg-yellow-400/90 backdrop-blur-sm text-gray-900 text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
-                                    <Award className="h-3 w-3" />
-                                    Premium
-                                  </span>
-                                )}
-                              </div>
-                              
-                              {/* ABV Badge */}
-                              <span className="px-3 py-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm text-gray-900 dark:text-white text-sm font-bold rounded-full shadow-lg">
-                                {beer.abv}%
-                              </span>
-                            </div>
-
-                            {/* Bottom Info on Image */}
-                            <div className="absolute bottom-4 left-4 right-4">
-                              <h3 className="text-xl font-bold text-white mb-1 drop-shadow-lg">
-                                {beer.name}
-                              </h3>
-                              <p className="text-sm text-white/90 drop-shadow">
-                                {beer.brewery}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Content */}
-                          <div className="p-5 flex-1 flex flex-col">
-                            {/* Origin & Location */}
-                            {beer.origin && (
-                              <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                                {(() => {
-                                  const countryCode = getCountryCode(beer.origin)
-                                  return countryCode ? (
-                                    <img 
-                                      src={`https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`}
-                                      alt={beer.origin}
-                                      className="h-5 w-auto rounded shadow-sm"
-                                      onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = 'none'
-                                      }}
-                                    />
-                                  ) : (
-                                    <MapPin className="h-5 w-5 text-purple-600" />
-                                  )
-                                })()}
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                  {beer.origin}
-                                  {beer.state && <span className="text-gray-500 dark:text-gray-400"> • {beer.state}</span>}
-                                </span>
-                              </div>
-                            )}
-
-                            {/* Technical Details Grid */}
-                            <div className="grid grid-cols-2 gap-3 mb-4">
-                              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <BarChart3 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">IBU</span>
-                                </div>
-                                <p className="text-lg font-bold text-gray-900 dark:text-white">{beer.ibu}</p>
-                              </div>
-
-                              {beer.servingTemp && (
-                                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Servir</span>
-                                  </div>
-                                  <p className="text-sm font-bold text-gray-900 dark:text-white">{beer.servingTemp}</p>
-                                </div>
-                              )}
-
-                              {beer.color && (
-                                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 col-span-2">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">🎨 Color</span>
-                                  </div>
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white">{beer.color}</p>
-                                </div>
-                              )}
-
-                              {beer.glassType && (
-                                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 col-span-2">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">🍺 Vaso</span>
-                                  </div>
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white">{beer.glassType}</p>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Tasting Notes */}
-                            {(beer.aroma || beer.flavor) && (
-                              <div className="mb-4 space-y-2">
-                                {beer.aroma && (
-                                  <div>
-                                    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">👃 Aroma:</p>
-                                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{beer.aroma}</p>
-                                  </div>
-                                )}
-                                {beer.flavor && (
-                                  <div>
-                                    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">👅 Sabor:</p>
-                                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{beer.flavor}</p>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Pairing */}
-                            {beer.pairing && (
-                              <div className="mb-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg p-3">
-                                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
-                                  🍽️ Maridaje:
-                                </p>
-                                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{beer.pairing}</p>
-                              </div>
-                            )}
-
-                            {/* Price - Push to bottom */}
-                            {beer.price && (
-                              <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                                    ${beer.price.toFixed(2)}
-                                  </span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                                    por botella
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          </div>
-                        </Link>
+                        <BeerListingCard
+                          beer={beer}
+                          categorySlug={category}
+                          categoryInfo={categoryInfo}
+                        />
                       </motion.div>
                     ))}
                   </div>
@@ -669,168 +759,12 @@ export default function CategoryBeersPage() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="group"
                 >
-                  <Link href={`/beers/${category}/${beer.id}`}>
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 h-full flex flex-col cursor-pointer">
-                    {/* Image */}
-                    <div className="relative h-56 overflow-hidden">
-                      {beer.image ? (
-                        <img
-                          src={beer.image}
-                          alt={beer.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                        />
-                      ) : (
-                        <div className={`w-full h-full bg-gradient-to-br ${categoryInfo.bgColor} flex items-center justify-center`}>
-                          <categoryInfo.icon className="h-20 w-20 text-purple-600 dark:text-purple-400" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                      
-                      {/* Badges Container */}
-                      <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
-                        <div className="flex flex-col gap-2">
-                          {beer.isCraft && (
-                            <span className="px-3 py-1 bg-amber-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full shadow-lg">
-                              🍺 Artesanal
-                            </span>
-                          )}
-                          {beer.isPremium && (
-                            <span className="px-3 py-1 bg-yellow-400/90 backdrop-blur-sm text-gray-900 text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
-                              <Award className="h-3 w-3" />
-                              Premium
-                            </span>
-                          )}
-                        </div>
-                        
-                        {/* ABV Badge */}
-                        <span className="px-3 py-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm text-gray-900 dark:text-white text-sm font-bold rounded-full shadow-lg">
-                          {beer.abv}%
-                        </span>
-                      </div>
-
-                      {/* Bottom Info on Image */}
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="text-xl font-bold text-white mb-1 drop-shadow-lg">
-                          {beer.name}
-                        </h3>
-                        <p className="text-sm text-white/90 drop-shadow">
-                          {beer.brewery}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-5 flex-1 flex flex-col">
-                      {/* Origin & Location */}
-                      {beer.origin && (
-                        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                          {(() => {
-                            const countryCode = getCountryCode(beer.origin)
-                            return countryCode ? (
-                              <img 
-                                src={`https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`}
-                                alt={beer.origin}
-                                className="h-5 w-auto rounded shadow-sm"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = 'none'
-                                }}
-                              />
-                            ) : (
-                              <MapPin className="h-5 w-5 text-purple-600" />
-                            )
-                          })()}
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {beer.origin}
-                            {beer.state && <span className="text-gray-500 dark:text-gray-400"> • {beer.state}</span>}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Technical Details Grid */}
-                      <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <BarChart3 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">IBU</span>
-                          </div>
-                          <p className="text-lg font-bold text-gray-900 dark:text-white">{beer.ibu}</p>
-                        </div>
-
-                        {beer.servingTemp && (
-                          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Servir</span>
-                            </div>
-                            <p className="text-sm font-bold text-gray-900 dark:text-white">{beer.servingTemp}</p>
-                          </div>
-                        )}
-
-                        {beer.color && (
-                          <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 col-span-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">🎨 Color</span>
-                            </div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{beer.color}</p>
-                          </div>
-                        )}
-
-                        {beer.glassType && (
-                          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 col-span-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">🍺 Vaso</span>
-                            </div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{beer.glassType}</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Tasting Notes */}
-                      {(beer.aroma || beer.flavor) && (
-                        <div className="mb-4 space-y-2">
-                          {beer.aroma && (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">👃 Aroma:</p>
-                              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{beer.aroma}</p>
-                            </div>
-                          )}
-                          {beer.flavor && (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">👅 Sabor:</p>
-                              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{beer.flavor}</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Pairing */}
-                      {beer.pairing && (
-                        <div className="mb-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg p-3">
-                          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
-                            🍽️ Maridaje:
-                          </p>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{beer.pairing}</p>
-                        </div>
-                      )}
-
-                      {/* Price - Push to bottom */}
-                      {beer.price && (
-                        <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
-                          <div className="flex items-center justify-between">
-                            <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                              ${beer.price.toFixed(2)}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                              por botella
-                            </span>
-                          </div>
-                        </div>
-                        )}
-                    </div>
-                    </div>
-                  </Link>
+                  <BeerListingCard
+                    beer={beer}
+                    categorySlug={category}
+                    categoryInfo={categoryInfo}
+                  />
                 </motion.div>
               ))}
             </div>

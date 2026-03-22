@@ -476,12 +476,12 @@ export default function AdminProductsPage() {
                         </button>
                         <button
                           onClick={() => {
-                            // Para cócteles, usar la ruta específica de detalle
                             if (product.type === 'cocktail') {
                               router.push(`/cocktails/${product.category}/${product.id}`)
+                            } else if (product.category) {
+                              router.push(`/${product.type}s/${product.category}/${product.id}`)
                             } else {
-                              // Para otros tipos, mostrar mensaje por ahora
-                              alert(`Vista pública para ${product.type}s aún no implementada`)
+                              toast.error('No se pudo abrir la vista pública: falta categoría')
                             }
                           }}
                           className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"

@@ -55,12 +55,17 @@ npm install
 
 ### 3. Configurar variables de entorno
 ```bash
-cp env.example .env.local
+cp .env.example .env.local
 ```
 
-Editar `.env.local` con tus credenciales:
+Editar `.env.local` con tus credenciales. **Una sola base:**
 ```env
 DATABASE_URL="postgresql://username:password@localhost:5432/mixology_pro"
+```
+
+**PostgreSQL local + Railway a la vez:** define `DATABASE_URL_LOCAL`, `DATABASE_URL_RAILWAY` y `DATABASE_TARGET=local` o `railway`. Detalle en `DATABASE_SETUP.md`.
+
+```env
 NEXTAUTH_SECRET="tu-secret-key"
 NEXTAUTH_URL="http://localhost:3000"
 ```
@@ -118,7 +123,7 @@ railway init
 # Crear servicio PostgreSQL
 railway add postgresql
 
-# Obtener DATABASE_URL
+# Railway inyecta DATABASE_URL en el servicio web automáticamente al vincular Postgres
 railway variables
 ```
 

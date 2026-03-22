@@ -25,6 +25,8 @@ const spiritCategories = [
   { value: 'GIN', label: 'Gin' },
   { value: 'TEQUILA', label: 'Tequila' },
   { value: 'COGNAC', label: 'Cognac' },
+  { value: 'AMARETTO', label: 'Amaretto' },
+  { value: 'SCHNAPPS', label: 'Schnapps' },
   { value: 'BRANDY', label: 'Brandy' },
   { value: 'MEZCAL', label: 'Mezcal' },
   { value: 'LIQUEUR', label: 'Licor' }

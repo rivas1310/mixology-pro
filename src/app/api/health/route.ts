@@ -15,9 +15,12 @@ export async function GET() {
       cocktails: cocktailCount,
       env: {
         NODE_ENV: process.env.NODE_ENV,
-        hasDbUrl: !!process.env.DATABASE_URL,
-        vercelUrl: process.env.VERCEL_URL
-      }
+        databaseTarget: process.env.DATABASE_TARGET || 'local',
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        hasDatabaseUrlLocal: !!process.env.DATABASE_URL_LOCAL,
+        hasDatabaseUrlRailway: !!process.env.DATABASE_URL_RAILWAY,
+        vercelUrl: process.env.VERCEL_URL,
+      },
     })
   } catch (error: any) {
     return NextResponse.json({
@@ -27,4 +30,5 @@ export async function GET() {
     }, { status: 500 })
   }
 }
+
 

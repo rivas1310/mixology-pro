@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { 
   LayoutDashboard, 
   Package, 
@@ -108,7 +108,18 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
+  const router = useRouter()
+
+  if (pathname === '/admin/login') {
+    return <>{children}</>
+  }
+
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' })
+    router.push('/admin/login')
+    router.refresh()
+  }
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
@@ -141,13 +152,18 @@ export default function AdminLayout({
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-          {adminNavItems.map((item) => (
+          {adminNavItems.map((item) => {
+            const active =
+              item.href === '/admin/settings'
+                ? pathname.startsWith('/admin/settings')
+                : pathname === item.href
+            return (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                pathname === item.href
+                active
                   ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
@@ -160,7 +176,7 @@ export default function AdminLayout({
                 </div>
               </div>
             </Link>
-          ))}
+          )})}
         </nav>
 
         {/* User Info */}
@@ -216,6 +232,13 @@ export default function AdminLayout({
                 <div className="w-2 h-2 bg-green-500 rounded-full" />
                 Sistema Activo
               </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400"
+              >
+                Cerrar sesión
+              </button>
             </div>
           </div>
         </header>

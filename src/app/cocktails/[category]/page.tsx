@@ -64,6 +64,16 @@ const categoryConfig = {
     subcategories: ['Clásicos', 'Modernos', 'Tropicales', 'De Temporada'],
     examples: ['Old Fashioned', 'Whiskey Sour', 'Mai Tai', 'Cosmopolitan']
   },
+  MODERN: {
+    icon: Sparkles,
+    color: 'from-fuchsia-500 to-violet-600',
+    bgColor: 'from-fuchsia-50 to-violet-50 dark:from-fuchsia-900/20 dark:to-violet-900/20',
+    description: 'Creaciones actuales, técnicas de barra y sabores contemporáneos',
+    difficulty: 'Intermedio',
+    time: '5-12 min',
+    subcategories: ['Molecular', 'Fat wash', 'Clarificados', 'De autor'],
+    examples: ['Penicillin', 'Paper Plane', 'Espresso Martini', 'Naked & Famous']
+  },
   TROPICAL: {
     icon: Flame,
     color: 'from-yellow-500 to-orange-600',
@@ -325,50 +335,65 @@ export default function CategoryPage() {
       {/* Filters */}
       <section className="py-8 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap gap-4 items-center justify-center">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/40 p-4">
+            <div className="flex flex-wrap gap-3 items-center justify-center">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Filtrar por dificultad:
-            </span>
-            <button
-              onClick={() => setSelectedDifficulty('all')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                selectedDifficulty === 'all'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/25'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30'
-              }`}
-            >
-              Todas
-            </button>
-            <button
-              onClick={() => setSelectedDifficulty('EASY')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                selectedDifficulty === 'EASY'
-                  ? 'bg-green-600 text-white shadow-lg shadow-green-600/25'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-900/30'
-              }`}
-            >
-              Fácil
-            </button>
-            <button
-              onClick={() => setSelectedDifficulty('MEDIUM')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                selectedDifficulty === 'MEDIUM'
-                  ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-600/25'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/30'
-              }`}
-            >
-              Intermedio
-            </button>
-            <button
-              onClick={() => setSelectedDifficulty('HARD')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                selectedDifficulty === 'HARD'
-                  ? 'bg-red-600 text-white shadow-lg shadow-red-600/25'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-100 dark:hover:bg-red-900/30'
-              }`}
-            >
-              Avanzado
-            </button>
+              </span>
+              <button
+                onClick={() => setSelectedDifficulty('all')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  selectedDifficulty === 'all'
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/25'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30'
+                }`}
+              >
+                Todas
+              </button>
+              <button
+                onClick={() => setSelectedDifficulty('EASY')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  selectedDifficulty === 'EASY'
+                    ? 'bg-green-600 text-white shadow-lg shadow-green-600/25'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-900/30'
+                }`}
+              >
+                Fácil
+              </button>
+              <button
+                onClick={() => setSelectedDifficulty('MEDIUM')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  selectedDifficulty === 'MEDIUM'
+                    ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-600/25'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/30'
+                }`}
+              >
+                Intermedio
+              </button>
+              <button
+                onClick={() => setSelectedDifficulty('HARD')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  selectedDifficulty === 'HARD'
+                    ? 'bg-red-600 text-white shadow-lg shadow-red-600/25'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-100 dark:hover:bg-red-900/30'
+                }`}
+              >
+                Avanzado
+              </button>
+              <button
+                onClick={() => {
+                  setSearchTerm('')
+                  setSelectedDifficulty('all')
+                }}
+                className="px-4 py-2 rounded-full text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+              >
+                Limpiar
+              </button>
+            </div>
+
+            <div className="mt-3 text-center text-sm text-gray-600 dark:text-gray-300">
+              {cocktails.length} resultados
+            </div>
           </div>
         </div>
       </section>

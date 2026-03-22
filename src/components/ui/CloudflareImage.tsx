@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 
 interface CloudflareImageProps {
   src: string
@@ -12,6 +12,7 @@ interface CloudflareImageProps {
   fill?: boolean
   priority?: boolean
   quality?: number
+  fallbackGradient?: string
 }
 
 export function CloudflareImage({
@@ -22,33 +23,36 @@ export function CloudflareImage({
   className = '',
   fill = false,
   priority = false,
-  quality = 75
+  quality = 75,
+  fallbackGradient = 'from-beige to-gold-light'
 }: CloudflareImageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
 
   if (hasError) {
     return (
-      <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${className}`}>
-        <div className="text-center p-4">
-          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-            Error cargando imagen
+      <div className={`flex items-center justify-center bg-gradient-to-br ${fallbackGradient} overflow-hidden ${className}`}>
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="relative text-center p-6 z-10">
+          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+            <AlertCircle className="h-8 w-8 text-white" />
+          </div>
+          <p className="text-sm text-white font-medium">
+            {alt}
           </p>
-          <details className="text-xs text-gray-500 dark:text-gray-400">
-            <summary className="cursor-pointer">Ver detalles</summary>
-            <p className="mt-2 break-all">URL: {src}</p>
-          </details>
         </div>
       </div>
     )
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`group relative overflow-hidden ${className}`}>
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 z-10">
-          <Loader2 className="h-6 w-6 text-gray-400 animate-spin" />
+        <div className={`absolute inset-0 bg-gradient-to-br ${fallbackGradient} animate-pulse z-10`}>
+          <div className="absolute inset-0 bg-black/10" />
+          <div className="flex items-center justify-center h-full">
+            <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+          </div>
         </div>
       )}
       
@@ -58,13 +62,11 @@ export function CloudflareImage({
         alt={alt}
         width={fill ? undefined : width}
         height={fill ? undefined : height}
-        className={`transition-opacity duration-300 ${
-          isLoading ? 'opacity-0' : 'opacity-100'
-        } ${fill ? 'w-full h-full object-cover' : ''}`}
+        className={`transition-all duration-700 ease-out ${
+          isLoading ? 'opacity-0 blur-sm' : 'opacity-100 blur-0'
+        } ${fill ? 'h-full w-full object-cover group-hover:scale-[1.02]' : ''}`}
         onLoad={() => setIsLoading(false)}
-        onError={(e) => {
-          console.error('Error cargando imagen:', src)
-          console.error('Error event:', e)
+        onError={() => {
           setIsLoading(false)
           setHasError(true)
         }}

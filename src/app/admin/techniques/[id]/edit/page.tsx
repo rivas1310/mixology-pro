@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
@@ -108,11 +108,7 @@ export default function EditTechniquePage() {
     { step: 1, instruction: '', tip: '' }
   ])
 
-  useEffect(() => {
-    loadTechnique()
-  }, [id])
-
-  const loadTechnique = async () => {
+  const loadTechnique = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/techniques/${id}`)
       if (response.ok) {
@@ -150,7 +146,11 @@ export default function EditTechniquePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    loadTechnique()
+  }, [loadTechnique])
 
   const getAvailableSubcategories = () => {
     return subcategoriesByCategory[formData.category as keyof typeof subcategoriesByCategory] || []

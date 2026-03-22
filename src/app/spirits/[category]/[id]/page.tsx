@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { OriginWithFlag } from '@/components/ui/OriginWithFlag'
 import { 
   ArrowLeft, 
   Star, 
@@ -223,10 +224,14 @@ export default function SpiritDetailPage() {
               {/* Origin & Producer */}
               <div className="flex flex-wrap gap-4 text-lg">
                 {spirit.origin && (
-                  <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                    <MapPin className="h-5 w-5 text-purple-600" />
-                    <span>{spirit.origin}</span>
-                    {spirit.denomination && <span className="text-gray-500 dark:text-gray-400">• {spirit.denomination}</span>}
+                  <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-300">
+                    <MapPin className="h-5 w-5 text-purple-600 shrink-0" />
+                    <OriginWithFlag origin={spirit.origin} />
+                    {spirit.denomination && (
+                      <span className="text-gray-500 dark:text-gray-400">
+                        • {spirit.denomination}
+                      </span>
+                    )}
                   </div>
                 )}
                 {spirit.producer && (
@@ -293,8 +298,16 @@ export default function SpiritDetailPage() {
                   <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-xl p-4">
                     <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">4. Origen</p>
                     <p className="text-gray-900 dark:text-white">
-                      <span className="font-bold">{spirit.origin}</span>
-                      {spirit.denomination && <span className="block text-sm mt-1">Denominación: {spirit.denomination}</span>}
+                      <OriginWithFlag
+                        origin={spirit.origin}
+                        textClassName="font-bold text-gray-900 dark:text-white"
+                        flagWidth={40}
+                      />
+                      {spirit.denomination && (
+                        <span className="block text-sm mt-2 font-normal text-gray-700 dark:text-gray-300">
+                          Denominación: {spirit.denomination}
+                        </span>
+                      )}
                     </p>
                   </div>
                 )}

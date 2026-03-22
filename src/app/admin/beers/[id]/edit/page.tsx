@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
@@ -12,25 +12,71 @@ import { ImageUpload } from '@/components/ui/ImageUpload'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
-import { Select } from '@/components/ui/Select'
 import toast from 'react-hot-toast'
 
+// Grupos de categoría tal como los consume el frontend:
+// /beers/[category] -> category en BD (LAGER/ALE/WHEAT/SPECIALTY/...)
 const beerCategories = [
-  { value: 'LAGER', label: 'Lager' },
-  { value: 'ALE', label: 'Ale' },
-  { value: 'IPA', label: 'IPA' },
-  { value: 'STOUT', label: 'Stout' },
-  { value: 'PORTER', label: 'Porter' },
+  { value: 'LAGER', label: 'Lagers' },
+  { value: 'ALE', label: 'Ales' },
   { value: 'WHEAT', label: 'Trigo' },
-  { value: 'PILSENER', label: 'Pilsener' },
-  { value: 'LAMBIC', label: 'Lambic' }
+  { value: 'SPECIALTY', label: 'Especiales' },
+  { value: 'CRAFT', label: 'Artesanales' },
+  { value: 'IMPORT', label: 'Importadas' },
+  { value: 'NONALCOHOLIC', label: 'Sin Alcohol' },
+  { value: 'SEASONAL', label: 'De Temporada' },
 ]
 
+// Subestilos tal como los consume el frontend:
+// /beers/[category] -> type en BD (ej: "Pale Ale")
 const beerTypes = [
-  { value: 'CRAFT', label: 'Artesanal' },
-  { value: 'COMMERCIAL', label: 'Comercial' },
-  { value: 'IMPORT', label: 'Importada' },
-  { value: 'LOCAL', label: 'Local' }
+  // Lagers
+  { value: 'Pilsner', label: 'Pilsner' },
+  { value: 'Helles', label: 'Helles' },
+  { value: 'Dunkel', label: 'Dunkel' },
+  { value: 'Bock', label: 'Bock' },
+
+  // Ales
+  { value: 'IPA', label: 'IPA' },
+  { value: 'Pale Ale', label: 'Pale Ale' },
+  { value: 'Stout', label: 'Stout' },
+  { value: 'Porter', label: 'Porter' },
+
+  // Trigo
+  { value: 'Hefeweizen', label: 'Hefeweizen' },
+  { value: 'Witbier', label: 'Witbier' },
+  { value: 'Weissbier', label: 'Weissbier' },
+  { value: 'American Wheat', label: 'American Wheat' },
+
+  // Especiales
+  { value: 'Sour', label: 'Sour' },
+  { value: 'Fruit Beer', label: 'Fruit Beer' },
+  { value: 'Barrel Aged', label: 'Barrel Aged' },
+  { value: 'Seasonal', label: 'Seasonal' },
+
+  // Artesanales
+  { value: 'IPA Artesanal', label: 'IPA Artesanal' },
+  { value: 'Pale Ale Artesanal', label: 'Pale Ale Artesanal' },
+  { value: 'Stout Artesanal', label: 'Stout Artesanal' },
+  { value: 'Porter Artesanal', label: 'Porter Artesanal' },
+
+  // Importadas
+  { value: 'Alemanas', label: 'Alemanas' },
+  { value: 'Belgas', label: 'Belgas' },
+  { value: 'Británicas', label: 'Británicas' },
+  { value: 'Americanas', label: 'Americanas' },
+
+  // Sin alcohol
+  { value: 'Lager 0%', label: 'Lager 0%' },
+  { value: 'Ale 0%', label: 'Ale 0%' },
+  { value: 'Wheat 0%', label: 'Wheat 0%' },
+  { value: 'IPA 0%', label: 'IPA 0%' },
+
+  // De temporada
+  { value: 'Primavera', label: 'Primavera' },
+  { value: 'Verano', label: 'Verano' },
+  { value: 'Otoño', label: 'Otoño' },
+  { value: 'Invierno', label: 'Invierno' },
 ]
 
 export default function EditBeerPage() {
@@ -43,7 +89,7 @@ export default function EditBeerPage() {
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
-    type: 'CRAFT',
+    type: 'Pilsner',
     category: 'LAGER',
     description: '',
     image: '',
@@ -97,11 +143,7 @@ export default function EditBeerPage() {
   const countryCode = getCountryCode(formData.origin)
   const flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : ''
 
-  useEffect(() => {
-    loadBeer()
-  }, [id])
-
-  const loadBeer = async () => {
+  const loadBeer = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/beers/${id}`)
       if (response.ok) {
@@ -135,7 +177,11 @@ export default function EditBeerPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    loadBeer()
+  }, [loadBeer])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -313,34 +359,36 @@ export default function EditBeerPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Tipo *
                 </label>
-                <Select
+                <Input
                   value={formData.type}
                   onChange={(e) => handleInputChange('type', e.target.value)}
+                  list="beer-types-list"
+                  placeholder="Ej: Pale Ale, IPA, Stout..."
                   required
-                >
-                  {beerTypes.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
+                />
+                <datalist id="beer-types-list">
+                  {beerTypes.map((type) => (
+                    <option key={type.value} value={type.value} />
                   ))}
-                </Select>
+                </datalist>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Categoría *
                 </label>
-                <Select
+                <Input
                   value={formData.category}
                   onChange={(e) => handleInputChange('category', e.target.value)}
+                  list="beer-categories-list"
+                  placeholder="Ej: LAGER, ALE, WHEAT..."
                   required
-                >
-                  {beerCategories.map(category => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
+                />
+                <datalist id="beer-categories-list">
+                  {beerCategories.map((category) => (
+                    <option key={category.value} value={category.value} />
                   ))}
-                </Select>
+                </datalist>
               </div>
             </div>
             
@@ -604,4 +652,3 @@ export default function EditBeerPage() {
     </div>
   )
 }
-

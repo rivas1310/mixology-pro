@@ -441,15 +441,17 @@ export default function CategoryToolsPage() {
                 </select>
               </div>
 
-              {/* Sort Filter */}
-              <div className="relative">
-                <TrendingUp className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <select className="w-full pl-12 pr-4 py-3 text-lg border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm appearance-none">
-                  <option value="name">Ordenar por Nombre</option>
-                  <option value="rating">Ordenar por Rating</option>
-                  <option value="price">Ordenar por Precio</option>
-                  <option value="difficulty">Ordenar por Dificultad</option>
-                </select>
+              {/* Actions */}
+              <div className="flex items-center">
+                <button
+                  onClick={() => {
+                    setSearchTerm('')
+                    setSelectedSubcategory('all')
+                  }}
+                  className="w-full py-3 text-lg rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                >
+                  Limpiar filtros
+                </button>
               </div>
             </div>
           </div>

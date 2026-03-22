@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener todas las herramientas
 export async function GET(request: NextRequest) {
@@ -16,7 +17,8 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json({ tools })
+    const normalizedTools = tools.map(normalizeImageRecord)
+    return NextResponse.json({ tools: normalizedTools })
 
   } catch (error) {
     console.error('Error obteniendo herramientas:', error)
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(tool, { status: 201 })
+    return NextResponse.json(normalizeImageRecord(tool), { status: 201 })
 
   } catch (error) {
     console.error('Error creando herramienta:', error)

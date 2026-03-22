@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener licor por ID
 export async function GET(
@@ -33,7 +34,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(spirit)
+    return NextResponse.json(normalizeImageRecord(spirit))
 
   } catch (error) {
     console.error('Error obteniendo licor:', error)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { 
@@ -80,11 +80,7 @@ export default function EditToolPage() {
     origin: ''
   })
 
-  useEffect(() => {
-    loadTool()
-  }, [id])
-
-  const loadTool = async () => {
+  const loadTool = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/tools/${id}`)
       if (response.ok) {
@@ -118,7 +114,11 @@ export default function EditToolPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    loadTool()
+  }, [loadTool])
 
   const getAvailableSubcategories = () => {
     return subcategoriesByCategory[formData.category as keyof typeof subcategoriesByCategory] || []

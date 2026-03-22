@@ -25,13 +25,15 @@ import {
   ZapIcon,
   Flame as FlameIcon,
   Target as TargetIcon,
-  BarChart3 as BarChart3Icon
+  BarChart3 as BarChart3Icon,
+  Sparkles
 } from 'lucide-react'
 import { COCKTAIL_CATEGORIES } from '@/lib/constants'
 
 // Configuración de categorías con iconos
 const categoryIcons = {
   CLASSIC: WineIcon,
+  MODERN: Sparkles,
   TROPICAL: FlameIcon,
   DESSERT: Heart,
   SOUR: ZapIcon,
@@ -131,10 +133,10 @@ export default function CocktailDetailPage() {
   const CategoryIcon = categoryIcons[cocktail.category as keyof typeof categoryIcons]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-cyan-500/10" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Back Button */}
           <button
@@ -153,7 +155,7 @@ export default function CocktailDetailPage() {
               transition={{ duration: 0.6 }}
               className="relative"
             >
-              <div className="relative h-96 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-2xl overflow-hidden">
+              <div className="relative h-96 bg-gradient-to-br from-violet-100 to-slate-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-2xl overflow-hidden">
                 {cocktail.image ? (
                   <img
                     src={cocktail.image}
@@ -206,7 +208,7 @@ export default function CocktailDetailPage() {
 
               {/* Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl">
+                <div className="text-center p-4 bg-white/90 dark:bg-gray-800/50 rounded-xl border border-slate-200 dark:border-gray-700/60 shadow-sm">
                   <div className="flex items-center justify-center mb-2">
                     <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   </div>
@@ -218,7 +220,7 @@ export default function CocktailDetailPage() {
                   </div>
                 </div>
 
-                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl">
+                <div className="text-center p-4 bg-white/90 dark:bg-gray-800/50 rounded-xl border border-slate-200 dark:border-gray-700/60 shadow-sm">
                   <div className="flex items-center justify-center mb-2">
                     <Star className="h-5 w-5 text-yellow-400" />
                   </div>
@@ -230,7 +232,7 @@ export default function CocktailDetailPage() {
                   </div>
                 </div>
 
-                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl">
+                <div className="text-center p-4 bg-white/90 dark:bg-gray-800/50 rounded-xl border border-slate-200 dark:border-gray-700/60 shadow-sm">
                   <div className="flex items-center justify-center mb-2">
                     <Award className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   </div>
@@ -242,7 +244,7 @@ export default function CocktailDetailPage() {
                   </div>
                 </div>
 
-                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl">
+                <div className="text-center p-4 bg-white/90 dark:bg-gray-800/50 rounded-xl border border-slate-200 dark:border-gray-700/60 shadow-sm">
                   <div className="flex items-center justify-center mb-2">
                     <Droplets className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
@@ -274,7 +276,7 @@ export default function CocktailDetailPage() {
       </section>
 
       {/* Recipe Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section className="py-20 bg-slate-50/70 dark:bg-gray-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Ingredients */}
@@ -289,7 +291,7 @@ export default function CocktailDetailPage() {
               <div className="space-y-4">
                 {cocktail.ingredientsText && Array.isArray(cocktail.ingredientsText) && cocktail.ingredientsText.length > 0 ? (
                   cocktail.ingredientsText.map((ingredient: string, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <div key={index} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
                           <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
@@ -327,7 +329,7 @@ export default function CocktailDetailPage() {
               <div className="space-y-4">
                 {cocktail.instructions && cocktail.instructions.length > 0 ? (
                   cocktail.instructions.map((instruction: any, index: number) => (
-                    <div key={index} className="flex gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <div key={index} className="flex gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700">
                       <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
                         {instruction.step}
                       </div>
@@ -382,7 +384,7 @@ export default function CocktailDetailPage() {
       </section>
 
       {/* History Section */}
-      <section className="py-20 bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <section className="py-20 bg-gradient-to-br from-slate-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

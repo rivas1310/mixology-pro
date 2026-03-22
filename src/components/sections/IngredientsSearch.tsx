@@ -15,6 +15,7 @@ import {
   ChevronRight
 } from 'lucide-react'
 import Link from 'next/link'
+import { cocktailDetailPath } from '@/lib/publicUrls'
 
 const ingredientCategories = [
   {
@@ -282,7 +283,10 @@ export function IngredientsSearch() {
                     transition={{ duration: 0.4, delay: index * 0.1 }}
                     className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
                   >
-                    <Link href={`/cocktails/${cocktail.id}`} className="block">
+                    <Link
+                      href={cocktailDetailPath(cocktail.category, cocktail.id)}
+                      className="block"
+                    >
                       <div className="flex items-start justify-between mb-4">
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
                           {cocktail.name}
@@ -317,8 +321,8 @@ export function IngredientsSearch() {
                       </div>
                     </Link>
 
-                    <Link 
-                      href={`/cocktails/${cocktail.id}`}
+                    <Link
+                      href={cocktailDetailPath(cocktail.category, cocktail.id)}
                       className="w-full mt-4 flex items-center justify-center gap-2 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
                     >
                       Ver Receta

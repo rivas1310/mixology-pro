@@ -1,188 +1,219 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Menu, 
-  X, 
-  Search, 
-  Heart, 
-  User, 
-  Moon, 
-  Sun,
-  Wine,
-  Sparkles
-} from 'lucide-react'
-import { useApp } from '@/app/providers'
+import { Menu, X, Heart, Moon, Sun, Wine, Search, ChevronDown } from 'lucide-react'
+import { useApp } from '@/contexts/AppProvider'
+import { COCKTAIL_CATEGORIES } from '@/lib/constants'
 
 const navItems = [
-  { name: 'Inicio', href: '/' },
-  { name: 'Cócteles', href: '/cocktails' },
-  { name: 'Licores', href: '/spirits' },
   { name: 'Cervezas', href: '/beers' },
   { name: 'Vinos', href: '/wines' },
-  { name: 'Ingredientes', href: '/ingredients' },
+  { name: 'Licores', href: '/spirits' },
   { name: 'Técnicas', href: '/techniques' },
   { name: 'Herramientas', href: '/tools' },
+  { name: 'Ingredientes', href: '/ingredients' },
+]
+
+const cocktailDropdownItems = [
+  { name: 'Todos', href: '/cocktails' },
+  ...COCKTAIL_CATEGORIES.map((c) => ({
+    name: c.label,
+    href: `/cocktails/${encodeURIComponent(c.value)}`,
+  })),
 ]
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const [isCocktailDropdownOpen, setIsCocktailDropdownOpen] = useState(false)
+  const [isCocktailMobileOpen, setIsCocktailMobileOpen] = useState(false)
   const pathname = usePathname()
+  const path = pathname ?? ''
   const { theme, setTheme, favorites } = useApp()
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const cocktailDropdownRef = useRef<HTMLDivElement>(null)
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        cocktailDropdownRef.current &&
+        !cocktailDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCocktailDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  useEffect(() => {
+    setIsCocktailDropdownOpen(false)
+    setIsCocktailMobileOpen(false)
+    setIsOpen(false)
+  }, [pathname])
+
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg' 
-          : 'bg-transparent'
-      }`}
-    >
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
-            <div className="relative">
-              <Wine className="h-8 w-8 text-primary-600 group-hover:text-primary-700 transition-colors" />
-              <Sparkles className="h-3 w-3 text-accent-500 absolute -top-1 -right-1" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-              Mixology Pro
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-beige/80 bg-white/95 backdrop-blur-sm dark:border-primary-700 dark:bg-primary-900/95">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <Link href="/" className="flex flex-1 items-center space-x-2">
+            <Wine className="h-5 w-5 text-olive dark:text-gold-light" />
+            <span className="font-display text-lg font-semibold text-primary-800 dark:text-cream-100">
+              Mixology
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden flex-1 items-center justify-center gap-5 md:flex">
+            <div
+              ref={cocktailDropdownRef}
+              className="relative"
+            >
+              <button
+                type="button"
+                className={`inline-flex items-center gap-1 text-xs uppercase tracking-[0.08em] transition-colors ${
+                  path.startsWith('/cocktails')
+                    ? 'border-b border-gold text-gold-dark'
+                    : 'text-primary-700 hover:text-gold-dark dark:text-gray-300 dark:hover:text-gold-light'
+                }`}
+                onClick={() => setIsCocktailDropdownOpen((prev) => !prev)}
+                aria-expanded={isCocktailDropdownOpen}
+                aria-label="Abrir categorías de cocktails"
+              >
+                Cocktails
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform ${isCocktailDropdownOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {isCocktailDropdownOpen && (
+                <div className="absolute left-0 top-8 max-h-[min(70vh,420px)] min-w-[200px] overflow-y-auto border border-beige bg-white p-1 shadow-sm dark:border-primary-700 dark:bg-primary-900">
+                  {cocktailDropdownItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`block px-3 py-2 text-xs uppercase tracking-[0.06em] transition-colors ${
+                        path === item.href
+                          ? 'bg-cream text-gold-dark dark:bg-primary-800 dark:text-gold-light'
+                          : 'text-primary-700 hover:bg-cream-50 dark:text-gray-300 dark:hover:bg-primary-800'
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`relative px-3 py-2 text-sm font-medium transition-colors ${
-                  pathname === item.href
-                    ? 'text-primary-600 dark:text-primary-400'
-                    : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
+                className={`text-xs tracking-[0.08em] uppercase transition-colors ${
+                  path === item.href
+                    ? 'border-b border-gold text-gold-dark'
+                    : 'text-primary-700 hover:text-gold-dark dark:text-gray-300 dark:hover:text-gold-light'
                 }`}
               >
                 {item.name}
-                {pathname === item.href && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600"
-                    initial={false}
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
               </Link>
             ))}
           </div>
 
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+          <div className="flex flex-1 items-center justify-end space-x-3">
+            <button
+              aria-label="Buscar bebidas"
+              className="hidden p-2 text-primary-600 transition-colors hover:text-gold-dark md:flex dark:text-gray-300 dark:hover:text-gold-light"
+            >
               <Search className="h-5 w-5" />
             </button>
-            
-            <button className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+
+            <Link
+              href="/favorites"
+              className="relative p-2 text-primary-600 transition-colors hover:text-gold-dark dark:text-gray-300 dark:hover:text-gold-light"
+            >
               <Heart className="h-5 w-5" />
               {favorites.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary-800 text-xs font-medium text-cream-50">
                   {favorites.length}
                 </span>
               )}
-            </button>
+            </Link>
 
             <button
               onClick={toggleTheme}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              className="p-2 text-primary-600 transition-colors hover:text-gold-dark dark:text-gray-300 dark:hover:text-gold-light"
+              aria-label="Cambiar tema"
             >
               {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </button>
 
-            <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-              <User className="h-5 w-5" />
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 text-primary-700 md:hidden dark:text-gray-300"
+              aria-label="Abrir menú"
+            >
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
-
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-          >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
         </div>
 
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-gray-200 dark:border-gray-700"
-            >
-              <div className="py-4 space-y-2">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className={`block px-3 py-2 text-base font-medium transition-colors ${
-                      pathname === item.href
-                        ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-                
-                <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-gray-700 mt-4">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Acciones</span>
-                  <div className="flex items-center space-x-2">
-                    <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                      <Search className="h-5 w-5" />
-                    </button>
-                    <button className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-                      <Heart className="h-5 w-5" />
-                      {favorites.length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                          {favorites.length}
-                        </span>
-                      )}
-                    </button>
-                    <button
-                      onClick={toggleTheme}
-                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+        {isOpen && (
+          <div className="space-y-1 border-t border-beige py-4 md:hidden dark:border-primary-700">
+            <div className="border-b border-beige/70 pb-2 dark:border-primary-700">
+              <button
+                type="button"
+                onClick={() => setIsCocktailMobileOpen((prev) => !prev)}
+                className={`flex w-full items-center justify-between px-3 py-2 text-sm transition-colors ${
+                  path.startsWith('/cocktails') ? 'bg-cream text-gold-dark' : 'text-primary-700'
+                }`}
+                aria-expanded={isCocktailMobileOpen}
+              >
+                Cocktails
+                <ChevronDown className={`h-4 w-4 transition-transform ${isCocktailMobileOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isCocktailMobileOpen && (
+                <div className="mt-1 space-y-1 pl-3">
+                  {cocktailDropdownItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`block px-3 py-2 text-sm transition-colors ${
+                        path === item.href ? 'bg-cream text-gold-dark' : 'text-primary-600'
+                      }`}
                     >
-                      {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                    </button>
-                  </div>
+                      {item.name}
+                    </Link>
+                  ))}
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              )}
+            </div>
+
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className={`block px-3 py-2 text-sm transition-colors ${
+                  path === item.href
+                    ? 'bg-cream text-gold-dark'
+                    : 'text-primary-700'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+        )}
       </nav>
-    </motion.header>
+    </header>
   )
 }
-

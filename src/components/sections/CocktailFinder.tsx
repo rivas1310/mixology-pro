@@ -400,7 +400,7 @@ export default function CocktailFinder() {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <section id="finder" className="bg-white py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -410,14 +410,14 @@ export default function CocktailFinder() {
         >
           <div className="flex items-center justify-center mb-4">
             <div className="relative">
-              <Sparkles className="h-12 w-12 text-purple-600 dark:text-purple-400" />
-              <Wine className="h-6 w-6 text-pink-500 absolute -bottom-1 -right-1" />
+              <Sparkles className="h-12 w-12 text-gold" />
+              <Wine className="absolute -bottom-1 -right-1 h-6 w-6 text-olive" />
             </div>
           </div>
-          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="mb-4 text-4xl text-primary-800">
             ¿Qué puedes preparar hoy?
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          <p className="mx-auto max-w-3xl text-xl text-primary-600">
             Escribe los ingredientes, licores y destilados que tienes y descubre qué cócteles puedes preparar
           </p>
         </motion.div>
@@ -429,17 +429,17 @@ export default function CocktailFinder() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="max-w-4xl mx-auto mb-12"
         >
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700">
+          <div className="border border-beige bg-cream-50 p-8 shadow-sm">
             {/* Ingredientes Section */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                <label className="flex items-center gap-2 text-sm font-semibold text-primary-700">
+                  <span className="h-2 w-2 rounded-full bg-olive"></span>
                   Ingredientes
                 </label>
                 <button
                   onClick={handleAddIngredientField}
-                  className="flex items-center gap-1 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-semibold transition-colors"
+                  className="flex items-center gap-1 text-sm font-semibold text-gold-dark transition-colors hover:text-primary-800"
                 >
                   <Plus className="h-4 w-4" />
                   Agregar campo
@@ -454,12 +454,12 @@ export default function CocktailFinder() {
                       value={input}
                       onChange={(e) => handleIngredientChange(index, e.target.value)}
                       placeholder={`Ingrediente ${index + 1} (ej: limón, azúcar, menta, hielo...)`}
-                      className="flex-1 px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-800 transition-all"
+                      className="input flex-1"
                     />
                     {ingredientInputs.length > 1 && (
                       <button
                         onClick={() => handleRemoveIngredientField(index)}
-                        className="p-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+                        className="rounded-sm p-3 text-red-600 transition-colors hover:bg-red-50"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
@@ -471,8 +471,8 @@ export default function CocktailFinder() {
 
             {/* Licores Section */}
             <div className="mb-6">
-              <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                <span className="w-2 h-2 bg-pink-500 rounded-full"></span>
+              <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary-700">
+                <span className="h-2 w-2 rounded-full bg-gold"></span>
                 Licores
               </label>
               <input
@@ -480,14 +480,14 @@ export default function CocktailFinder() {
                 value={licoresInput}
                 onChange={(e) => setLicoresInput(e.target.value)}
                 placeholder="Licores que tienes (ej: cointreau, baileys, kahlúa, amaretto...)"
-                className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 dark:focus:ring-pink-800 transition-all"
+                className="input"
               />
             </div>
 
             {/* Destilados Section */}
             <div className="mb-6">
-              <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+              <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary-700">
+                <span className="h-2 w-2 rounded-full bg-olive"></span>
                 Destilados
               </label>
               <input
@@ -495,7 +495,7 @@ export default function CocktailFinder() {
                 value={destiladosInput}
                 onChange={(e) => setDestiladosInput(e.target.value)}
                 placeholder="Destilados que tienes (ej: ron, vodka, gin, tequila, whiskey...)"
-                className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 dark:focus:ring-amber-800 transition-all"
+                className="input"
               />
             </div>
 
@@ -503,15 +503,15 @@ export default function CocktailFinder() {
             <button
               onClick={handleSearch}
               disabled={!hasAnyInput()}
-              className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:cursor-not-allowed text-lg"
+              className="flex w-full items-center justify-center gap-2 border border-primary-700 bg-primary-800 py-4 text-lg font-semibold text-cream-50 transition-all duration-300 hover:bg-primary-900 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
               <Search className="h-5 w-5" />
               Buscar Cócteles
             </button>
 
             {/* Helper Text */}
-            <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-              <p className="text-sm text-blue-700 dark:text-blue-300">
+            <div className="mt-6 border border-beige bg-white p-4">
+              <p className="text-sm text-primary-600">
                 <strong>💡 Consejo:</strong> Escribe uno o varios ingredientes en cada campo. Por ejemplo: &quot;limón, naranja&quot; o &quot;menta fresca&quot;. Puedes agregar más campos de ingredientes si lo necesitas.
               </p>
             </div>

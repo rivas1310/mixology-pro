@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener cerveza por ID
 export async function GET(
@@ -20,7 +21,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(beer)
+    return NextResponse.json(normalizeImageRecord(beer))
 
   } catch (error) {
     console.error('Error obteniendo cerveza:', error)

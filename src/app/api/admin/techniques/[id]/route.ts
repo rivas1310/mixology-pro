@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener técnica por ID
 export async function GET(
@@ -20,7 +21,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(technique)
+    return NextResponse.json(normalizeImageRecord(technique))
 
   } catch (error) {
     console.error('Error obteniendo técnica:', error)
@@ -87,7 +88,7 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json(technique)
+    return NextResponse.json(normalizeImageRecord(technique))
 
   } catch (error) {
     console.error('Error actualizando técnica:', error)

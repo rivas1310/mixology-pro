@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { normalizeImageRecord } from '@/lib/imageUrl'
 
 // GET - Obtener todos los cócteles
 export async function GET(request: NextRequest) {
@@ -9,39 +10,55 @@ export async function GET(request: NextRequest) {
     const difficulty = searchParams.get('difficulty')
     const featured = searchParams.get('featured')
     const limit = searchParams.get('limit')
+    const search = searchParams.get('search')?.trim()
 
-    // Construir filtros
-    const where: any = {}
-    
+    const filters: Record<string, unknown>[] = []
+
     if (category && category !== 'all') {
-      where.category = category
+      filters.push({ category })
     }
-    
+
     if (difficulty && difficulty !== 'all') {
-      where.difficulty = difficulty
+      filters.push({ difficulty })
     }
-    
+
     if (featured === 'true') {
-      where.isFeatured = true
+      filters.push({ isFeatured: true })
     }
+
+    if (search) {
+      filters.push({
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { description: { contains: search, mode: 'insensitive' as const } },
+        ],
+      })
+    }
+
+    const where = filters.length > 0 ? { AND: filters } : {}
+
+    const takeRaw = limit ? parseInt(limit, 10) : 500
+    const take = Number.isFinite(takeRaw)
+      ? Math.min(Math.max(takeRaw, 1), 1000)
+      : 500
 
     // Obtener cócteles
     const cocktails = await prisma.cocktail.findMany({
       where,
       include: {
         instructions: {
-          orderBy: { step: 'asc' }
-        }
+          orderBy: { step: 'asc' },
+        },
       },
       orderBy: [
         { isFeatured: 'desc' },
         { rating: 'desc' },
-        { createdAt: 'desc' }
+        { createdAt: 'desc' },
       ],
-      ...(limit && { take: parseInt(limit) })
+      take,
     })
 
-    return NextResponse.json(cocktails)
+    return NextResponse.json(cocktails.map(normalizeImageRecord))
 
   } catch (error) {
     console.error('Error obteniendo cócteles:', error)

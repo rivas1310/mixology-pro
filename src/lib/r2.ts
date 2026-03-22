@@ -1,6 +1,11 @@
 import { S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import {
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+} from '@aws-sdk/client-s3'
 
 // Configuración de Cloudflare R2
 const r2Client = new S3Client({
@@ -81,6 +86,61 @@ export async function createDownloadUrl(key: string): Promise<string> {
   } catch (error) {
     console.error('Error generando URL de descarga:', error)
     throw new Error('Error generando URL de descarga')
+  }
+}
+
+export type MediaFolder =
+  | 'cocktails'
+  | 'ingredients'
+  | 'spirits'
+  | 'beers'
+  | 'wines'
+  | 'techniques'
+  | 'tools'
+  | 'users'
+
+const IMAGE_KEY_EXT = /\.(jpe?g|png|webp|avif)$/i
+
+/** Lista objetos de imagen bajo `folder/` en R2 (galería admin). */
+export async function listMediaByFolder(
+  folder: MediaFolder,
+  options?: { maxKeys?: number; continuationToken?: string }
+): Promise<{
+  items: { key: string; url: string; lastModified: string | null; size: number | undefined }[]
+  isTruncated: boolean
+  nextContinuationToken: string | undefined
+}> {
+  const prefix = `${folder}/`
+  const maxKeys = Math.min(Math.max(options?.maxKeys ?? 200, 1), 1000)
+
+  const command = new ListObjectsV2Command({
+    Bucket: BUCKET_NAME,
+    Prefix: prefix,
+    MaxKeys: maxKeys,
+    ContinuationToken: options?.continuationToken,
+  })
+
+  const response = await r2Client.send(command)
+  const contents = response.Contents ?? []
+
+  const items = contents
+    .filter((o) => o.Key && !o.Key.endsWith('/') && IMAGE_KEY_EXT.test(o.Key))
+    .map((o) => ({
+      key: o.Key!,
+      url: getPublicUrl(o.Key!),
+      lastModified: o.LastModified ? o.LastModified.toISOString() : null,
+      size: o.Size,
+    }))
+    .sort((a, b) => {
+      const ta = a.lastModified ? new Date(a.lastModified).getTime() : 0
+      const tb = b.lastModified ? new Date(b.lastModified).getTime() : 0
+      return tb - ta
+    })
+
+  return {
+    items,
+    isTruncated: response.IsTruncated ?? false,
+    nextContinuationToken: response.NextContinuationToken,
   }
 }
 

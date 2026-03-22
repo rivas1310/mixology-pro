@@ -28,7 +28,7 @@ interface WineDetail {
   description?: string
   image?: string
   abv?: number
-  vintage?: number
+  vintage?: string | null
   origin?: string
   region?: string
   denomination?: string
@@ -89,7 +89,7 @@ export default function WineDetailPage({ params }: { params: Promise<{ category:
 
     const loadWine = async () => {
       try {
-        const response = await fetch(`/api/admin/wines/${id}`)
+        const response = await fetch(`/api/wines/${id}`)
         
         if (response.ok) {
           const data = await response.json()
