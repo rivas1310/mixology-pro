@@ -1,28 +1,48 @@
-/**
- * Resuelve la URL de PostgreSQL para la app (local, Railway u otra).
- *
- * Modos:
- * 1) Solo `DATABASE_URL` → se usa siempre (típico en Railway / despliegues).
- * 2) `DATABASE_URL_LOCAL` + `DATABASE_URL_RAILWAY` + `DATABASE_TARGET=local|railway`
- *    → alternar sin reescribir la URL a mano.
- *
- * `DATABASE_TARGET` por defecto: `local`
- */
-export function getDatabaseUrl(): string {
-  const target = (process.env.DATABASE_TARGET || 'local').toLowerCase()
+function normalizeEnv(value?: string): string | undefined {
+  if (!value) return undefined
+  const trimmed = value.trim()
+  if (!trimmed) return undefined
 
-  if (target === 'railway') {
-    const railway = process.env.DATABASE_URL_RAILWAY?.trim()
-    if (railway) return railway
-  } else {
-    const local = process.env.DATABASE_URL_LOCAL?.trim()
-    if (local) return local
+  // Tolerar valores pegados con comillas en .env: KEY= "value"
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim() || undefined
   }
 
-  const fallback = process.env.DATABASE_URL?.trim()
-  if (fallback) return fallback
+  return trimmed
+}
+
+/**
+ * Resuelve la URL de PostgreSQL para la app (local / Railway / única).
+ *
+ * Prioridades:
+ * - Si hay `DATABASE_TARGET`, se respeta (`local` o `railway`).
+ * - Sin target explícito:
+ *   - Producción/Vercel: Railway -> DATABASE_URL -> Local
+ *   - Desarrollo: Local -> DATABASE_URL -> Railway
+ */
+export function getDatabaseUrl(): string {
+  const single = normalizeEnv(process.env.DATABASE_URL)
+  const local = normalizeEnv(process.env.DATABASE_URL_LOCAL)
+  const railway = normalizeEnv(process.env.DATABASE_URL_RAILWAY)
+
+  const rawTarget = normalizeEnv(process.env.DATABASE_TARGET)?.toLowerCase()
+  const hasExplicitTarget = rawTarget === 'local' || rawTarget === 'railway'
+
+  let resolved: string | undefined
+
+  if (hasExplicitTarget) {
+    resolved = rawTarget === 'railway' ? railway || single || local : local || single || railway
+  } else {
+    const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL
+    resolved = isProd ? railway || single || local : local || single || railway
+  }
+
+  if (resolved) return resolved
 
   throw new Error(
-    '[database] Define DATABASE_URL, o bien DATABASE_URL_LOCAL (y opcionalmente DATABASE_URL_RAILWAY + DATABASE_TARGET). Ver .env.example'
+    '[database] No hay URL configurada. Define DATABASE_URL, o usa DATABASE_URL_LOCAL / DATABASE_URL_RAILWAY (opcional DATABASE_TARGET=local|railway).'
   )
 }
