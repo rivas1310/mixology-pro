@@ -5,10 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "clean:next": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if (Test-Path .next) { Remove-Item -Recurse -Force .next }\"",
+    "clean:next": "node -e \"const fs=require('fs'); fs.rmSync('.next',{recursive:true,force:true});\"",
     "dev:clean": "npm run clean:next && next dev",
-    "build": "npx prisma generate && npx prisma db push --accept-data-loss && next build",
-    "vercel-build": "npx prisma generate && npx prisma db push --accept-data-loss && next build",
+    "build": "npm run clean:next && next build",
+    "vercel-build": "npx prisma generate && npm run clean:next && next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
